@@ -1,5 +1,10 @@
 const axios = require('axios'); 
-const query_commands = require('./database/database.js')
+const query_commands = require('./database/database.js'); 
+let dateoption = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }; 
 
 const ROOT_URL = 'https://authenticjobs.com/api/?api_key='; 
 const KEY = 'c1f69b196fc568a7850bbb092eef2748'; 

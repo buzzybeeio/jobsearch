@@ -1,5 +1,10 @@
 const axios = require('axios');
 const query_commands = require('./database/database.js');
+let dateoption = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }; 
 
 const ROOT_URL = 'http://service.dice.com/api/rest/jobsearch/v1/simple.json?text='; 
 const language = 'javascript'
