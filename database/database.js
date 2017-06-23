@@ -1,4 +1,4 @@
-const connectionString = `postgres://${process.env.USER}@localhost:5432/jobdata`
+const connectionString = process.env.DATABASE_URL || `postgres://${process.env.USER}@localhost:5432/jobdata`
 const pgp = require('pg-promise')()
 const db = pgp(connectionString)
 
