@@ -1,5 +1,5 @@
 const axios = require('axios');
-const query_commands = require('./database/database.js');
+const queryCommands = require('../database/database.js');
 let dateoption = {
     year: 'numeric',
     month: 'long',
@@ -15,7 +15,7 @@ const page = '1'
 
 const insertjobs = ({data}) =>
     data.resultItemList.forEach(({jobTitle, company, location, date, detailUrl}) => {
-        query_commands.insert([jobTitle, company, location, date, detailUrl])
+        queryCommands.insert([jobTitle, company, location, date, detailUrl])
     })
 
 axios.get(`${ROOT_URL}${language}&country=${country}&city=${cityState}&age=${age}&page=${page}`)

@@ -1,5 +1,5 @@
 const api = require('indeed-api').getInstance('7256479688442809');
-const query_commands = require('./database/database.js');
+const queryCommands = require('../database/database.js');
 let dateoption = {
     year: 'numeric',
     month: 'long',
@@ -8,7 +8,7 @@ let dateoption = {
 
 const insertjobs = ({results}) =>
     results.forEach(({jobtitle, company, city, date, url}) => {
-        query_commands.insert([jobtitle, company, city, date, url])
+        queryCommands.insert([jobtitle, company, city, date, url])
     })
 
 api.JobSearch()

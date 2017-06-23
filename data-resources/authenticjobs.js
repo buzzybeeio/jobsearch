@@ -1,5 +1,7 @@
+require('dotenv').config( {path: '../.env'})
 const axios = require('axios'); 
-const query_commands = require('./database/database.js'); 
+const queryCommands = require('../database/database.js'); 
+
 let dateoption = {
     year: 'numeric',
     month: 'long',
@@ -14,8 +16,9 @@ let numberofjobs = '20'
 
 const insertjobs = ({data}) =>
     data.listings.listing.forEach(({title, company, post_date, url}) => {
-        query_commands.insert([title, company.name, company.location.city, post_date, url])
+        queryCommands.insert([title, company.name, company.location.city, post_date, url])
     })
 
 axios.get(`${ROOT_URL}${KEY}&method=aj.jobs.search&keywords=${keywords}&perpage=${numberofjobs}&location=${location}&format=json`)
     .then( insertjobs , console.log )
+    .catch(console.log)
