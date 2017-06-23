@@ -6,6 +6,10 @@ let dateoption = {
     day: 'numeric'
   }; 
 
+process.on('unhandledRejection', (Reason, Promise) => {
+    console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
+})  
+
 const insertjobs = ({results}) =>
     results.forEach(({jobtitle, company, city, date, url}) => {
         queryCommands.insert([jobtitle, company, city, date, url])

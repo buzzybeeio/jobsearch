@@ -5,6 +5,9 @@ let dateoption = {
     month: 'long',
     day: 'numeric'
   }; 
+process.on('unhandledRejection', (Reason, Promise) => {
+    console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
+})
 
 const ROOT_URL = 'http://service.dice.com/api/rest/jobsearch/v1/simple.json?text='; 
 const language = 'javascript'

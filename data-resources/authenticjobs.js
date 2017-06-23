@@ -1,6 +1,9 @@
 require('dotenv').config( {path: '../.env'})
 const axios = require('axios'); 
 const queryCommands = require('../database/database.js'); 
+process.on('unhandledRejection', (Reason, Promise) => {
+    console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
+})
 
 let dateoption = {
     year: 'numeric',

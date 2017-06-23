@@ -2,9 +2,9 @@ DROP TABLE IF EXISTS job;
 
 CREATE TABLE job(
     id SERIAL PRIMARY KEY,
-    title VARCHAR(2000) NOT NULL,
-    company VARCHAR(2000) NOT NULL,
-    location VARCHAR(2000) NOT NULL,
-    datepost VARCHAR(2000) NOT NULL,
-    URL VARCHAR(2000) NOT NULL
+    title VARCHAR(2000),
+    company VARCHAR(2000),
+    location VARCHAR(2000),
+    datepost VARCHAR(2000),
+    URL VARCHAR(2000)
 );
