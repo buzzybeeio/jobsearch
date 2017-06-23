@@ -1,0 +1,81 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "indeed-api",
+        "scope": null,
+        "escapedName": "indeed-api",
+        "name": "indeed-api",
+        "rawSpec": "",
+        "spec": "latest",
+        "type": "tag"
+      },
+      "/Users/michaelmasterson/Desktop/buzzybee/jobsearch"
+    ]
+  ],
+  "_from": "indeed-api@latest",
+  "_id": "indeed-api@1.0.0",
+  "_inCache": true,
+  "_location": "/indeed-api",
+  "_npmUser": {
+    "name": "keannan5390",
+    "email": "drew@drewfrisk.com"
+  },
+  "_npmVersion": "1.3.14",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "indeed-api",
+    "scope": null,
+    "escapedName": "indeed-api",
+    "name": "indeed-api",
+    "rawSpec": "",
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/indeed-api/-/indeed-api-1.0.0.tgz",
+  "_shasum": "1776930920170857d51049ef92d2a64f0fe7b584",
+  "_shrinkwrap": null,
+  "_spec": "indeed-api",
+  "_where": "/Users/michaelmasterson/Desktop/buzzybee/jobsearch",
+  "author": {
+    "name": "Drew Frisk"
+  },
+  "bugs": {
+    "url": "https://github.com/keannan5390/Node-Indeed-API/issues"
+  },
+  "dependencies": {
+    "querystring": "~0.2.0",
+    "restler": "~3.1.0"
+  },
+  "description": "A node.js library for the Indeed job search api.",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "1776930920170857d51049ef92d2a64f0fe7b584",
+    "tarball": "https://registry.npmjs.org/indeed-api/-/indeed-api-1.0.0.tgz"
+  },
+  "homepage": "https://github.com/keannan5390/Node-Indeed-API",
+  "keywords": [
+    "indeed"
+  ],
+  "main": "api.js",
+  "maintainers": [
+    {
+      "name": "keannan5390",
+      "email": "drew@drewfrisk.com"
+    }
+  ],
+  "name": "indeed-api",
+  "optionalDependencies": {},
+  "readme": "﻿#Node Indeed API\r\n﻿\r\n﻿This is a small library for interacting with the Indeed API via node.js.\r\n\r\n﻿As the Indeed API only supports 2 endpoints, there are 2 operations you can perform in the library.\r\n\r\n- Job Search\r\n- Get Jobs\r\n\r\n###Usage\r\n\r\nAn instance of the api can be invoked by calling getInstance() and providing it your publisher id.\r\n\r\n```js\r\nvar api = require('indeed-api').getInstance(\"YOUR-PUBLISHER-ID-HERE\");\r\n```\r\n\r\nFrom there, the JobSearch() and GetJobs() endpoints can be accessed.\r\n\r\nEach endpoints query builder is accessed through chainable methods.\r\n\r\n####Do a job search\r\nSearches for a jobs based on the defined query.\r\n\r\n######Available Methods:\r\n- WhereKeywords(keywords)\t\t-- Sets the keywords to be used in the query\r\n- WhereLocation(location)\t\t-- Sets the location query values for the search query\r\n- SortBy(value)\t\t\t\t\t\t\t-- Sets the value to sort by.\r\n- Radius(radius)\t\t\t\t\t\t-- Sets the distance to include in the search results. Radius is \"as the crow flies\" from the location.\r\n- WhereSiteType(type)\t\t\t\t-- Specifies the site type to use in the search.\r\n- WhereJobType(type)\t\t\t\t-- Specifies the job type to use in the search.\r\n- FromResult(position)\t\t\t-- Sets the maximum number of results retured by the query.\r\n- Limit(limit)\t\t\t\t\t\t\t-- Sets the number of days back to search\r\n- Fromage(from)\t\t\t\t\t\t\t-- Sets whether or not to highlight the keywords in the results\r\n- Highlight(bool)\t\t\t\t\t\t-- Sets whether or not to filter duplicate results\r\n- FilterDuplicates(bool)\t\t-- Sets whether or not to include the lat/lng position in the results\r\n- IncludePosition(bool)\t\t\t-- Sets the country to use in the search.\r\n- WhereCountry(country)\t\t\t-- Sets the channel to use in the search. Will group the results to the specific channel.\r\n- WhereChannel(channel)\t\t\t-- Sets the IP number of the end-user who will see the results.\r\n- UserIP(userip)\t\t\t\t\t\t-- Sets the User-Agent (browser) of the end-user who will see the results.\r\n- UserAgent(userAgent)\t\t\t-- Sets the User-Agent (browser) of the end-user who will see the results.\r\n\r\n```js\r\n// do a job search\r\napi.JobSearch()\r\n\t.Radius(20)\r\n\t.WhereLocation({\r\n\t\tcity : \"Stevens Point\",\r\n\t\tstate : \"WI\"\r\n\t})\r\n\t.Limit(2)\r\n\t.WhereKeywords([\"Information Technology\"])\r\n\t.SortBy(\"date\")\r\n\t.UserIP(\"1.2.3.4\")\r\n\t.UserAgent(\"Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36\")\r\n\t.Search(\r\n\t\tfunction (results) {\r\n\t\t// do something with the success results\r\n\t\tconsole.log(results);\r\n\t},\r\n\t\tfunction (error) {\r\n\t\t// do something with the error results\r\n\t\tconsole.log(error);\r\n\t})\r\n;\r\n```\r\n\r\n####Retrieve jobs\r\nRetrieves specific job results based on their job key. (Available from the search results).\r\n\r\n######Available Methods:\r\n- WhereJobKeys(jobkeys)\t\t-- Sets the job keys to use in the retrieval\r\n\r\n```js\r\nvar jobkeys = [\"6a293ed4c08fe90c\", \"3c609d8c08b9297e\", ...];\r\napi.GetJob().WhereJobKeys(jobkeys).Retrieve(\r\n\tfunction (results) {\r\n\t\t// do something with the success results\r\n\t\tconsole.log(results);\r\n\t},\r\n\tfunction (error) {\r\n\t\t// do something with the error results\r\n\t\tconsole.log(error);\r\n\t})\r\n);\r\n```\r\n\r\n** The object structure in the results will be the same for both a search and retrieval **\r\n\r\n##Contribution\r\n\r\nBug fixes and features are welcomed.\r\n\r\n##License\r\n\r\nMIT License\r\n\r\nCopyright (C) 2012 Veselin Todorov\r\n\r\nPermission is hereby granted, free of charge, to any person obtaining a copy of\r\nthis software and associated documentation files (the \"Software\"), to deal in\r\nthe Software without restriction, including without limitation the rights to\r\nuse, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\r\nof the Software, and to permit persons to whom the Software is furnished to do\r\nso, subject to the following conditions:\r\n\r\nThe above copyright notice and this permission notice shall be included in all\r\ncopies or substantial portions of the Software.\r\n\r\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\r\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\r\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\r\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\r\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\r\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\r\nSOFTWARE.\r\n\r\n\r\n",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keannan5390/Node-Indeed-API.git"
+  },
+  "version": "1.0.0"
+}
