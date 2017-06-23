@@ -1,4 +1,4 @@
-const api = require('indeed-api').getInstance('7256479688442809');
+const api = require('../indeed-api').getInstance('7256479688442809');
 const queryCommands = require('../database/database.js');
 let dateoption = {
     year: 'numeric',
