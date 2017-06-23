@@ -1,4 +1,3 @@
-require('dotenv').config( {path: '../.env'})
 const axios = require('axios'); 
 const queryCommands = require('../database/database.js'); 
 process.on('unhandledRejection', (Reason, Promise) => {
