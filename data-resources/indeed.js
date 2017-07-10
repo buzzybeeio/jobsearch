@@ -12,6 +12,7 @@ process.on('unhandledRejection', (Reason, Promise) => {
 
 const insertjobs = ({results}) =>
     results.forEach(({jobtitle, company, city, date, url}) => {
+        date = new Date(date)
         queryCommands.insert([jobtitle, company, city, date, url])
     })
 

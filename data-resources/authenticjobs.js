@@ -18,6 +18,7 @@ let numberofjobs = '20'
 
 const insertjobs = ({data}) =>
     data.listings.listing.forEach(({title, company, post_date, url}) => {
+        post_date = new Date(post_date)
         queryCommands.insert([title, company.name, company.location.city, post_date, url])
     })
 

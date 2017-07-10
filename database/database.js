@@ -11,7 +11,7 @@ const insert = (input) => {
 }
 
 const getAllJobs = () => {
-    return db.any("SELECT * FROM job")
+    return db.any("SELECT * FROM job ORDER by datepost DESC")
 }
 
 module.exports = {

@@ -18,6 +18,7 @@ const page = '1'
 
 const insertjobs = ({data}) =>
     data.resultItemList.forEach(({jobTitle, company, location, date, detailUrl}) => {
+        date = new Date(date)
         queryCommands.insert([jobTitle, company, location, date, detailUrl])
     })
 
