@@ -8,7 +8,7 @@ let dateoption = {
 
 process.on('unhandledRejection', (Reason, Promise) => {
     console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
-})  
+})
 
 const insertjobs = ({results}) =>
     results.forEach(({jobtitle, company, city, date, url}) => {
@@ -22,7 +22,7 @@ api.JobSearch()
        city : "San Francisco",
         state : "CA"
     })
-    .Limit(20)
+    .Limit(30)
     .WhereKeywords(["frontend backend full stack engineer developer javascript"])
     .SortBy("date")
     .UserIP("1.2.3.4")

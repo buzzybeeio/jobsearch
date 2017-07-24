@@ -14,12 +14,14 @@ const language = 'javascript'
 const country = 'US'
 const cityState = 'San+Francisco,+CA'
 const age = '7'
-const page = '1'
+const page = '3'
 
 const insertjobs = ({data}) =>
     data.resultItemList.forEach(({jobTitle, company, location, date, detailUrl}) => {
         date = new Date(date)
-        queryCommands.insert([jobTitle, company, location, date, detailUrl])
+        if(company !== "CyberCoders") {
+            queryCommands.insert([jobTitle, company, location, date, detailUrl])
+        }
     })
 
 axios.get(`${ROOT_URL}${language}&country=${country}&city=${cityState}&age=${age}&page=${page}`)
