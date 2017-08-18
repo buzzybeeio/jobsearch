@@ -2,6 +2,9 @@ const queryCommands = require('./database/database.js');
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 3000 
+var mongoose = require('mongoose')
+mongoose.connect(require("./mongoSettings"))
+mongoose.model('stories',{name: String, component: String})
 
 const jobObject = {}
 
@@ -22,6 +25,13 @@ app.get('/', (request, response) => {
             response.json(jobObject)
         })
         .catch(console.log)
+})
+
+app.get('/stories', (request, response) => {
+    mongoose.model('stories').find((err, stories) => {
+        if(err) response.json([])
+        else response.json(stories)
+    })
 })
 
 app.listen(port, function () {
