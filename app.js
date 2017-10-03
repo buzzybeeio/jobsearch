@@ -2,8 +2,8 @@ const queryCommands = require('./database/database');
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
-const stories = ('./database/mongoose').stories;
-const jobs = ('./database/mongoose').jobs;
+const stories = require('./database/mongoose').stories;
+const jobs = require('./database/mongoose').jobs;
 
 const jobObject = {}
 
@@ -27,9 +27,9 @@ app.get('/', (request, response) => {
 })
 
 app.get('/stories', (request, response) => {
-    stories.find({}, null, { sort: '-date', limit: 8 }, (err, stories) => {
+    stories.find({}, null, { sort: '-date', limit: 8 }, (err, docs) => {
         if (err) response.json([])
-        else response.json(stories)
+        else response.json(docs)
     })
 })
 

@@ -1,5 +1,5 @@
-const queryCommands = require('./database/database.js')
-const jobs = require('../database/mongoose.js').jobs
+const queryCommands = require('./database/database')
+const jobs = require('./database/mongoose').jobs
 
 process.on('unhandledRejection', (Reason, Promise) => {
     console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
