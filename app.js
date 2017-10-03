@@ -1,10 +1,9 @@
-const queryCommands = require('./database/database.js');
-const express = require('express')
-const app = express()
-const port = process.env.PORT || 3000 
-var mongoose = require('mongoose')
-mongoose.connect(require("./mongoSettings"))
-mongoose.model('stories',{name: String, component: String})
+const queryCommands = require('./database/database');
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+const stories = ('./database/mongoose').stories;
+const jobs = ('./database/mongoose').jobs;
 
 const jobObject = {}
 
@@ -28,7 +27,7 @@ app.get('/', (request, response) => {
 })
 
 app.get('/stories', (request, response) => {
-    mongoose.model('stories').find((err, stories) => {
+    stories.find((err, stories) => {
         if(err) response.json([])
         else response.json(stories)
     })

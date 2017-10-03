@@ -15,7 +15,7 @@ const getAllJobs = () => {
 }
 
 module.exports = {
-    deleteAll, 
+    deleteAll,
     insert,
-    getAllJobs 
+    getAllJobs
 }
