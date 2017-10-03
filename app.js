@@ -7,19 +7,19 @@ const jobs = ('./database/mongoose').jobs;
 
 const jobObject = {}
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
 });
 
 app.get('/', (request, response) => {
     queryCommands.getAllJobs()
-        .then( results => {
-            let count = 1; 
+        .then(results => {
+            let count = 1;
             results.forEach(result => {
                 jobObject[count] = result
-                count ++
+                count++
             })
             response.json(jobObject)
         })
@@ -27,13 +27,20 @@ app.get('/', (request, response) => {
 })
 
 app.get('/stories', (request, response) => {
-    stories.find((err, stories) => {
-        if(err) response.json([])
+    stories.find({}, null, { sort: '-date', limit: 8 }, (err, stories) => {
+        if (err) response.json([])
         else response.json(stories)
     })
 })
 
+app.get('/story/:storyID', (request, response) => {
+    stories.findById(req.params.storyID, (err, story) => {
+        if (err) response.json({})
+        else response.json(story)
+    })
+})
+
 app.listen(port, function () {
-  console.log(`Listening on port ${port}`)
+    console.log(`Listening on port ${port}`)
 })
 

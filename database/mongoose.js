@@ -7,7 +7,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 const stories = mongoose.model('stories', Schema({
   name: String,
-  component: String
+  component: String,
+  date: Number
 }))
 
 const jobs = mongoose.model('jobs', Schema({
