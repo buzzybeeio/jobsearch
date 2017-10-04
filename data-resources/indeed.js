@@ -1,31 +1,38 @@
 const api = require('../indeed-api').getInstance('7256479688442809');
 const queryCommands = require('../database/database.js');
-let dateoption = {
+const jobs = require('../database/mongoose.js').jobs;
+const dateoption = {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
-  }; 
+};
 
 process.on('unhandledRejection', (Reason, Promise) => {
     console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
 })
 
-const insertjobs = ({results}) =>
-    results.forEach(({jobtitle, company, city, date, url}) => {
+const insertjobs = ({ results }) =>
+    results.forEach(({ jobtitle, company, city, date, url }) => {
         date = new Date(date)
         queryCommands.insert([jobtitle, company, city, date, url])
+        let job = new jobs({ title: jobtitle, company, location: city, datepost: date, URL: url })
+        job.save(err => {
+            if (err) {
+                console.log(`error saving job ${jobTitle}:${company}, ${err}`)
+            }
+        });
     })
 
 api.JobSearch()
     .Radius(20)
     .WhereLocation({
-       city : "San Francisco",
-        state : "CA"
+        city: "San Francisco",
+        state: "CA"
     })
     .Limit(30)
     .WhereKeywords(["frontend backend full stack engineer developer javascript"])
     .SortBy("date")
     .UserIP("1.2.3.4")
     .UserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36")
-    .Search( insertjobs , console.log )
-;
+    .Search(insertjobs, console.log)
+    ;

@@ -1,13 +1,21 @@
-const queryCommands = require("./database/database.js")
+const queryCommands = require('./database/database')
+const jobs = require('./database/mongoose').jobs
 
 process.on('unhandledRejection', (Reason, Promise) => {
     console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
 })
 
-queryCommands.deleteAll().then(
-    result => {
-        require('./data-resources/authenticjobs')
-        require('./data-resources/dice')
-        require('./data-resources/indeed')
-    }
-)
+jobs.remove({}, () => {
+
+})
+
+
+setTimeout(() => {
+    queryCommands.deleteAll().then(
+        result => {
+            require('./data-resources/authenticjobs')
+            require('./data-resources/dice')
+            require('./data-resources/indeed')
+        }
+    )
+}, 1000)
