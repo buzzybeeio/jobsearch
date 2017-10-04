@@ -34,7 +34,7 @@ app.get('/stories', (request, response) => {
 })
 
 app.get('/story/:storyID', (request, response) => {
-    stories.findById(req.params.storyID, (err, story) => {
+    stories.findById(request.params.storyID, (err, story) => {
         if (err) response.json({})
         else response.json(story)
     })
