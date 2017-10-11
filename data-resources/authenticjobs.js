@@ -1,14 +1,11 @@
 const axios = require('axios');
 const queryCommands = require('../database/database.js');
 const jobs = require('../database/mongoose.js').jobs;
-<<<<<<< HEAD
-=======
 
 // keep track of promises
 process.on('unhandledRejection', (Reason, Promise) => {
     console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
 })
->>>>>>> 914b5ffd7f3ee66c6b18ce4bebe246fa57ca28ec
 
 const dateoption = {
     year: 'numeric',
