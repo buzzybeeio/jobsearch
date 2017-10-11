@@ -42,5 +42,12 @@ app.get('/story/:storyID', (request, response) => {
 
 app.listen(port, function () {
     console.log(`Listening on port ${port}`)
+    jobs.remove({}, () => {
+        queryCommands.deleteAll().then(
+            result => {
+                require('./data-resources/authenticjobs')
+                require('./data-resources/indeed')
+            }
+        )
+    })
 })
-
