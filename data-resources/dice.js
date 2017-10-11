@@ -8,10 +8,6 @@ const dateoption = {
     day: 'numeric'
 };
 
-process.on('unhandledRejection', (Reason, Promise) => {
-    console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
-})
-
 const ROOT_URL = 'http://service.dice.com/api/rest/jobsearch/v1/simple.json?text=';
 const language = 'javascript'
 const country = 'US'
@@ -21,19 +17,25 @@ const page = '3'
 
 const insertjobs = ({ data }) => {
     data.resultItemList.forEach(({ jobTitle, company, location, date, detailUrl }) => {
-        date = new Date(date)
         if (company !== "CyberCoders") {
-            queryCommands.insert([jobTitle, company, location, date, detailUrl])
-            let job = new jobs({ title: jobTitle, company, location, date, URL: detailUrl })
-            job.save(err => {
-                if(err){
-                    console.log(`error saving job ${jobTitle}:${company}, ${err}`)
-                }
-            });
+            console.log(typeof company)
+            try {
+                queryCommands.insert([jobTitle, company, location, date, detailUrl])
+                let job = new jobs({ title: jobTitle, company: company.name, location, date, URL: detailUrl })
+                job.save().catch(err => {
+                    if (err) {
+                        console.log(`error saving job "${jobTitle}", dice`)
+                    }
+                });
+            }
+            catch (e) {
+                console.log('Error with dice')
+            }
+
         }
     })
 }
 
-
 axios.get(`${ROOT_URL}${language}&country=${country}&city=${cityState}&age=${age}&page=${page}`)
-    .then(insertjobs, console.log)
+    .then(insertjobs)
+    .catch(console.log)

@@ -7,20 +7,20 @@ const dateoption = {
     day: 'numeric'
 };
 
-process.on('unhandledRejection', (Reason, Promise) => {
-    console.log('Reason =>>>>>>', Reason, 'Promise =>>>>>>', Promise)
-})
-
 const insertjobs = ({ results }) =>
     results.forEach(({ jobtitle, company, city, date, url }) => {
-        date = new Date(date)
-        queryCommands.insert([jobtitle, company, city, date, url])
-        let job = new jobs({ title: jobtitle, company, location: city, datepost: date, URL: url })
-        job.save(err => {
-            if (err) {
-                console.log(`error saving job ${jobTitle}:${company}, ${err}`)
-            }
-        });
+        try {
+            queryCommands.insert([jobtitle, company, city, date, url])
+            let job = new jobs({ title: jobtitle, company, location: city, datepost: date, URL: url })
+            job.save().catch(err => {
+                if (err) {
+                    console.log(`error saving job "${jobtitle}", indeed`)
+                }
+            });
+        }
+        catch (e) {
+            console.log('Error with indeed')
+        }
     })
 
 api.JobSearch()
@@ -34,5 +34,4 @@ api.JobSearch()
     .SortBy("date")
     .UserIP("1.2.3.4")
     .UserAgent("Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36")
-    .Search(insertjobs, console.log)
-    ;
+    .Search(insertjobs, console.log);
