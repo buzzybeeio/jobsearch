@@ -13,7 +13,7 @@ app.use(function (req, res, next) {
 });
 
 app.get('/', (request, response) => {
-  jobs.find({}, { sort: '-datepost' }, (err, docs) => {
+  jobs.find({}, null, { sort: '-datepost', limit: 50 }, (err, docs) => {
     if (err) response.json([])
     else response.json(docs)
   })
@@ -34,7 +34,7 @@ app.get('/story/:storyID', (request, response) => {
 })
 
 app.get('/findStory/:str', () => {
-  const words = req.params.str.split(' ')
+  const words = req.params.str.split('%20')
   const criteria = {
     $or: words.map(word => ({})),
     limit: 20

@@ -1,5 +1,5 @@
 const axios = require('axios');
-const jobs = require('../database/mongoose.js').jobs;
+const jobs = require('../database/mongoose').jobs;
 
 const dateoption = {
     year: 'numeric',

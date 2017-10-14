@@ -1,5 +1,5 @@
 const api = require('../indeed-api').getInstance('7256479688442809');
-const jobs = require('../database/mongoose.js').jobs;
+const jobs = require('../database/mongoose').jobs;
 const dateoption = {
     year: 'numeric',
     month: 'long',
