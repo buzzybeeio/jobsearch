@@ -15,7 +15,7 @@ const jobs = mongoose.model('jobs', Schema({
   title: String,
   company: String,
   location: String,
-  datepost: String,
+  datepost: Number,
   URL: String
 }))
 

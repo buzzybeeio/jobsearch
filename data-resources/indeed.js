@@ -1,6 +1,5 @@
 const api = require('../indeed-api').getInstance('7256479688442809');
-const queryCommands = require('../database/database.js');
-const jobs = require('../database/mongoose.js').jobs;
+const jobs = require('../database/mongoose').jobs;
 const dateoption = {
     year: 'numeric',
     month: 'long',
@@ -10,8 +9,8 @@ const dateoption = {
 const insertjobs = ({ results }) =>
     results.forEach(({ jobtitle, company, city, date, url }) => {
         try {
-            queryCommands.insert([jobtitle, company, city, date, url])
-            let job = new jobs({ title: jobtitle, company, location: city, datepost: date, URL: url })
+            const datepost = (new Date(date)).getTime()
+            let job = new jobs({ title: jobtitle, company, location: city, datepost, URL: url })
             job.save().catch(err => {
                 if (err) {
                     console.log(`error saving job "${jobtitle}", indeed`)

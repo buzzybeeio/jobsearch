@@ -1,6 +1,5 @@
 const axios = require('axios');
-const queryCommands = require('../database/database.js');
-const jobs = require('../database/mongoose.js').jobs;
+const jobs = require('../database/mongoose').jobs;
 
 // keep track of promises
 process.on('unhandledRejection', (Reason, Promise) => {
@@ -23,11 +22,9 @@ const insertjobs = ({ data }) => {
     // selecting the specific data that we are getting back
     data.listings.listing.forEach(({ title, company, post_date, url }) => {
         try {
-            // insterting the data into the postgreSQL database
-            queryCommands.insert([title, company.name, company.location.city, post_date, url])
-
+            const datepost = (new Date(post_date)).getTime()
             //inserting the data to mongoDB
-            let job = new jobs({ title, company: company.name, location, datepost: post_date, URL: url })
+            const job = new jobs({ title, company: company.name, location, datepost, URL: url })
             job.save().catch(err => {
                 if (err) {
                     console.log(`error saving job "${title}", authentic jobs`)

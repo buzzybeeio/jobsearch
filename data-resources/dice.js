@@ -1,6 +1,5 @@
 const axios = require('axios');
-const queryCommands = require('../database/database.js');
-const jobs = require('../database/mongoose.js').jobs;
+const jobs = require('../database/mongoose').jobs;
 
 const dateoption = {
     year: 'numeric',
@@ -18,10 +17,9 @@ const page = '3'
 const insertjobs = ({ data }) => {
     data.resultItemList.forEach(({ jobTitle, company, location, date, detailUrl }) => {
         if (company !== "CyberCoders") {
-            console.log(typeof company)
             try {
-                queryCommands.insert([jobTitle, company, location, date, detailUrl])
-                let job = new jobs({ title: jobTitle, company: company.name, location, date, URL: detailUrl })
+                const datepost = (new Date(date)).getTime()
+                const job = new jobs({ title: jobTitle, company: company.name, location, datepost, URL: detailUrl })
                 job.save().catch(err => {
                     if (err) {
                         console.log(`error saving job "${jobTitle}", dice`)
