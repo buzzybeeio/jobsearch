@@ -7,9 +7,9 @@ module.exports = {
 
     return new Promise((resolve, reject) => {
       api.JobSearch()
-        .Radius(25)
+        .Radius(20)
         .WhereLocation(location)
-        .Limit(100)
+        .Limit(50)
         .WhereKeywords(keywords)
         .UserIP('1.2.3.4')
         .UserAgent('Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36')
