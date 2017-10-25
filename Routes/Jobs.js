@@ -4,61 +4,70 @@ const indeed = require('../data-resources/indeed').custom
 const authenticJobs = require('../data-resources/authenticjobs').custom
 
 router.get('/', (req, res) => {
-  keywords = ['developer', 'javascript', 'react', 'python', 'django', 'software', 'engineer', 'web', 'startup']
+  keywords = ['developer', 'javascript', 'react', 'python', 'django', 'software', 'engineer', 'web', 'startup', 'full-stack', 'front-end']
   const criteria = {
     $or: keywords.map(word => ({ title: { $regex: word, $options: 'i' } })).concat(keywords.map(word => ({ description: { $regex: word, $options: 'i' } })))
   }
 
-  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost' })
-    .then(docs => {
-      const length = docs.length
-      docs = docs.slice(0, 75)
-      res.json({ results: docs, length })
+  jobs.paginate(criteria, { select: 'title company location datepost URL', sort: '-datepost', limit: 75 })
+    .then(data => {
+      res.json({ jobs: data.docs, length: data.total })
     })
     .catch(err => {
       console.log(err)
-      res.json({ results: [], length: 0 })
+      res.json({ jobs: [], length: 0 })
     })
 })
 
 router.post('/paginated', (req, res) => {
-  const criteria = {
-    $or: req.body.keywords.map(word => ({ title: { $regex: word, $options: 'i' } })).concat(req.body.keywords.map(word => ({ description: { $regex: word, $options: 'i' } })))
+  const keywords = req.body.keywords.map(word => new RegExp(`${word.replace('-', '(-|\\s)?')}`, 'i'))
+
+  const $or = keywords.map($regex => ({ title: { $regex } }))
+    .concat(keywords.map($regex => ({ description: { $regex } })))
+
+  const criteria = { $or, location: { $regex: new RegExp(`${req.body.place.city.replace(' ', '\\s?')}`, 'gi') } }
+
+  const options = {
+    select: 'title company location datepost URL',
+    sort: '-datepost',
+    page: req.body.page,
+    limit: 75
   }
 
-  const cityRegExp = new RegExp(`${req.body.place.city.replace(' ', '\\s?')}`, 'gi')
-
-  criteria.location = { $regex: cityRegExp }
-
-  const skip = (req.body.page - 1) * 75
-
-  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost', skip, limit: 75 })
-    .then(docs => res.json(docs))
+  jobs.paginate(criteria, options)
+    .then(data => {
+      res.json({ jobs: data.docs, length: data.total })
+    })
     .catch(err => {
       console.log(err)
-      res.json([])
+      res.json({ jobs: [], length: 0 })
     })
 })
 
 router.post('/', (req, res) => {
-  const criteria = {
-    $or: req.body.keywords.map(word => ({ title: { $regex: word, $options: 'i' } })).concat(req.body.keywords.map(word => ({ description: { $regex: word, $options: 'i' } })))
+  const keywords = req.body.keywords.map(word => new RegExp(`${word.replace('-', '(-|\\s)?')}`, 'i'))
+
+  const $or = keywords.map($regex => ({ title: { $regex } }))
+    .concat(keywords.map($regex => ({ description: { $regex } })))
+
+  const criteria = { $or, location: { $regex: new RegExp(`${req.body.place.city.replace(' ', '\\s?')}`, 'gi') } }
+
+  const options = {
+    select: 'title company location datepost URL',
+    sort: '-datepost',
+    limit: 75
   }
 
-  const cityRegExp = new RegExp(`${req.body.place.city.replace(' ', '\\s?')}`, 'gi')
-
-  criteria.location = { $regex: cityRegExp }
-
-  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost' })
-    .then(docs => {
-      if (docs.length < 25) {
+  jobs.paginate(criteria, options)
+    .then(data => {
+      if (data.total < 25) {
 
         Promise.all([
           indeed(req.body.keywords, req.body.place),
           authenticJobs(req.body.keywords, req.body.place)
         ])
-          .then(data => {
-            const found_jobs = [].concat(...data)
+          .then(newData => {
+            const found_jobs = [].concat(...newData)
             found_jobs.sort((a, b) => b.datepost - a.datepost)
 
             found_jobs.forEach(job => {
@@ -71,25 +80,20 @@ router.post('/', (req, res) => {
             })
 
             const length = found_jobs.length
-            sliced_jobs = found_jobs.slice(0, 75)
-            res.json({ results: sliced_jobs, length })
+            const sliced_jobs = found_jobs.slice(0, 75)
+            res.json({ jobs: sliced_jobs, length })
           })
-          .catch(() => {
-            const length = docs.length
-            res.json({ results: docs, length })
-          })
+          .catch(() => res.json({ jobs: data.docs, length: data.total }))
 
       }
 
       else {
-        const length = docs.length
-        docs = docs.slice(0, 75)
-        res.json({ results: docs, length })
+        res.json({ jobs: data.docs, length: data.total })
       }
     })
     .catch(err => {
       console.log(err)
-      res.json({ results: [], length: 0 })
+      res.json({ jobs: [], length: 0 })
     })
 })
 
