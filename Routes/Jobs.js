@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
     $or: keywords.map(word => ({ title: { $regex: word, $options: 'i' } })).concat(keywords.map(word => ({ description: { $regex: word, $options: 'i' } })))
   }
 
-  jobs.paginate(criteria, { select: 'title company location datepost URL', sort: '-datepost', limit: 75 })
+  jobs.paginate(criteria, { select: 'title company location datepost URL', sort: '-datepost', limit: 50 })
     .then(data => {
       res.json({ jobs: data.docs, length: data.total })
     })
@@ -31,7 +31,7 @@ router.post('/paginated', (req, res) => {
     select: 'title company location datepost URL',
     sort: '-datepost',
     page: req.body.page,
-    limit: 75
+    limit: 50
   }
 
   jobs.paginate(criteria, options)
@@ -55,7 +55,7 @@ router.post('/', (req, res) => {
   const options = {
     select: 'title company location datepost URL',
     sort: '-datepost',
-    limit: 75
+    limit: 50
   }
 
   jobs.paginate(criteria, options)
@@ -80,7 +80,7 @@ router.post('/', (req, res) => {
             })
 
             const length = found_jobs.length
-            const sliced_jobs = found_jobs.slice(0, 75)
+            const sliced_jobs = found_jobs.slice(0, 50)
             res.json({ jobs: sliced_jobs, length })
           })
           .catch(() => res.json({ jobs: data.docs, length: data.total }))
