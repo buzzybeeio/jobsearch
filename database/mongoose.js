@@ -16,7 +16,8 @@ const jobs = mongoose.model('jobs', Schema({
   company: String,
   location: String,
   datepost: Number,
-  URL: String
+  URL: String,
+  description: String
 }))
 
 module.exports = { stories, jobs }

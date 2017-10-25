@@ -16,6 +16,7 @@ app.use(require('./Routes/Jobs'))
 app.use(require('./Routes/Stories'))
 
 app.listen(port, () => {
+  /*
   console.log(`Listening on port ${port}`)
   jobs.remove({})
   .then(() => {
@@ -27,4 +28,5 @@ app.listen(port, () => {
     console.log('error removing')
     console.log(err)
   })
+  */
 })

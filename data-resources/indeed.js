@@ -17,7 +17,7 @@ module.exports = {
           resolve(
             results.map(({ jobtitle, company, city, date, url }) => {
               const datepost = (new Date(date)).getTime()
-              return ({ title: jobtitle, company, location: city, datepost, URL: url })
+              return ({ title: jobtitle, company, location: city, datepost, URL: url, description: '' })
             })
           )
         }, err => {
@@ -31,7 +31,7 @@ module.exports = {
       results.forEach(({ jobtitle, company, city, date, url }) => {
         try {
           const datepost = (new Date(date)).getTime()
-          let job = new jobs({ title: jobtitle, company, location: city, datepost, URL: url })
+          const job = new jobs({ title: jobtitle, company, location: city, datepost, URL: url, description: '' })
           job.save().then(() => console.log(`added indeed job "${jobtitle}"`)).catch(err => {
             if (err) {
               console.log(`error saving job "${jobtitle}", indeed`)
