@@ -70,15 +70,6 @@ router.post('/', (req, res) => {
             const found_jobs = [].concat(...newData)
             found_jobs.sort((a, b) => b.datepost - a.datepost)
 
-            found_jobs.forEach(job => {
-              jobs.findOneAndUpdate(job, job, { upsert: true })
-                .catch(err => {
-                  if (err) {
-                    console.log(`error saving job "${title}"`)
-                  }
-                })
-            })
-
             const length = found_jobs.length
             const sliced_jobs = found_jobs.slice(0, 50)
             res.json({ jobs: sliced_jobs, length })

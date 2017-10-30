@@ -17,7 +17,16 @@ module.exports = {
           resolve(
             data.listings.listing.map(({ title, company, post_date, url, description }) => {
               const datepost = (new Date(post_date)).getTime()
-              return ({ title, company: company.name, location, datepost, URL: url, description })
+              const object = { title, company: company.name, location, datepost, URL: url, description }
+
+              jobs.findOneAndUpdate(object, object, { upsert: true })
+                .catch(err => {
+                  if (err) {
+                    console.log(`error saving job "${title}", authenticjobs`)
+                  }
+                })
+
+              return object
             })
           )
         })
