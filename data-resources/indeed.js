@@ -1,5 +1,10 @@
 const api = require('../indeed-api').getInstance('7256479688442809');
 const jobs = require('../database/mongoose').jobs;
+const crawlerConstructor = require('crawler');
+
+const crawler = new crawlerConstructor({
+  maxConnections: 5
+})
 
 module.exports = {
   custom: function (keywords, location) {
@@ -17,7 +22,42 @@ module.exports = {
           resolve(
             results.map(({ jobtitle, company, city, date, url }) => {
               const datepost = (new Date(date)).getTime()
-              return ({ title: jobtitle, company, location: city, datepost, URL: url, description: '' })
+              const object = { title: jobtitle, company, location: city, datepost, URL: url }
+
+              crawler.queue({
+                uri: url,
+                callback: function (err, res, done) {
+                  if (err) {
+                    console.log(err)
+                    object.description = ''
+
+                    jobs.findOneAndUpdate(object, object, { upsert: true })
+                      .catch(err => {
+                        if (err) {
+                          console.log(`error saving job "${title}", indeed, not crawled`)
+                        }
+                      })
+
+                    done()
+                  }
+                  else {
+                    object.description = res.$('#job_summary').html()
+                    object.description = object.description.replace(/<.*?>/g, ' ')
+
+                    const job = new jobs(object)
+
+                    jobs.findOneAndUpdate(object, object, { upsert: true })
+                      .catch(err => {
+                        if (err) {
+                          console.log(`error saving job "${jobtitle}", indeed, crawled`)
+                        }
+                      })
+                    done()
+                  }
+                }
+              })
+
+              return object
             })
           )
         }, err => {
@@ -31,12 +71,37 @@ module.exports = {
       results.forEach(({ jobtitle, company, city, date, url }) => {
         try {
           const datepost = (new Date(date)).getTime()
-          const job = new jobs({ title: jobtitle, company, location: city, datepost, URL: url, description: '' })
-          job.save().then(() => console.log(`added indeed job "${jobtitle}"`)).catch(err => {
-            if (err) {
-              console.log(`error saving job "${jobtitle}", indeed`)
+          const object = { title: jobtitle, company, location: city, datepost, URL: url }
+          crawler.queue({
+            url: url,
+            callback: function (err, res, done) {
+              if (err) {
+                console.log(err)
+                object.description = ''
+
+                const job = new jobs(object)
+
+                job.save().then(() => console.log(`added indeed job "${jobtitle}", not crawled`)).catch(err => {
+                  if (err) {
+                    console.log(`error saving job "${jobtitle}", indeed`)
+                  }
+                })
+              }
+              else {
+                object.description = res.$('#job_summary').html()
+                object.description = object.description.replace(/<.*?>/g, ' ')
+                const job = new jobs(object)
+
+                job.save().then(() => console.log(`added indeed job "${jobtitle}", crawled`)).catch(err => {
+                  if (err) {
+                    console.log(`error saving job "${jobtitle}", indeed`)
+                  }
+                })
+                done()
+              }
             }
-          });
+          })
+
         }
         catch (e) {
           console.log('Error with indeed')

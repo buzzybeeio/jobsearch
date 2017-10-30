@@ -17,7 +17,17 @@ module.exports = {
           resolve(
             data.listings.listing.map(({ title, company, post_date, url, description }) => {
               const datepost = (new Date(post_date)).getTime()
-              return ({ title, company: company.name, location, datepost, URL: url, description })
+              const object = { title, company: company.name, location, datepost, URL: url, description }
+              object.description = object.description.replace(/<.*?>/g, ' ')
+
+              jobs.findOneAndUpdate(object, object, { upsert: true })
+                .catch(err => {
+                  if (err) {
+                    console.log(`error saving job "${title}", authenticjobs`)
+                  }
+                })
+
+              return object
             })
           )
         })
@@ -34,6 +44,7 @@ module.exports = {
         try {
           const datepost = (new Date(post_date)).getTime()
           //inserting the data to mongoDB
+          description = description.replace(/<.*?>/g, ' ')
           const job = new jobs({ title, company: company.name, location, datepost, URL: url, description })
           job.save().then(() => console.log(`added authenticjobs job "${title}"`)).catch(err => {
             if (err) {
