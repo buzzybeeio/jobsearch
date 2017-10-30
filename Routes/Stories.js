@@ -26,7 +26,7 @@ router.get('/findStory/:str', (req, res) => {
   }
 
   stories.find(criteria, 'name')
-    .then(docs => res.json(filtered))
+    .then(docs => res.json(docs))
     .catch(err => {
       console.log(err)
       res.json([])
