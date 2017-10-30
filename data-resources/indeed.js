@@ -42,6 +42,8 @@ module.exports = {
                   }
                   else {
                     object.description = res.$('#job_summary').html()
+                    object.description = object.description.replace(/<.*?>/g, ' ')
+
                     const job = new jobs(object)
 
                     jobs.findOneAndUpdate(object, object, { upsert: true })
@@ -76,6 +78,7 @@ module.exports = {
               if (err) {
                 console.log(err)
                 object.description = ''
+
                 const job = new jobs(object)
 
                 job.save().then(() => console.log(`added indeed job "${jobtitle}", not crawled`)).catch(err => {
@@ -86,6 +89,7 @@ module.exports = {
               }
               else {
                 object.description = res.$('#job_summary').html()
+                object.description = object.description.replace(/<.*?>/g, ' ')
                 const job = new jobs(object)
 
                 job.save().then(() => console.log(`added indeed job "${jobtitle}", crawled`)).catch(err => {
