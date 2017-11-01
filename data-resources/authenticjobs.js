@@ -20,7 +20,11 @@ module.exports = {
               const object = { title, company: company.name, location, datepost, URL: url, description }
               object.description = object.description.replace(/<.*?>/g, ' ')
 
-              jobs.findOneAndUpdate(object, object, { upsert: true })
+              jobs.findOneAndUpdate({
+                title: object.title,
+                company: object.company,
+                description: object.description
+              }, object, { upsert: true })
                 .catch(err => {
                   if (err) {
                     console.log(`error saving job "${title}", authenticjobs`)
@@ -46,6 +50,7 @@ module.exports = {
           //inserting the data to mongoDB
           description = description.replace(/<.*?>/g, ' ')
           const job = new jobs({ title, company: company.name, location, datepost, URL: url, description })
+          
           job.save().then(() => console.log(`added authenticjobs job "${title}"`)).catch(err => {
             if (err) {
               console.log(`error saving job "${title}", authentic jobs`)

@@ -27,33 +27,38 @@ module.exports = {
               crawler.queue({
                 uri: url,
                 callback: function (err, res, done) {
+                  let crawled
                   if (err) {
                     console.log(err)
                     object.description = ''
-
-                    jobs.findOneAndUpdate(object, object, { upsert: true })
-                      .catch(err => {
-                        if (err) {
-                          console.log(`error saving job "${title}", indeed, not crawled`)
-                        }
-                      })
-
-                    done()
+                    crawled = 'not crawled'
                   }
                   else {
-                    object.description = res.$('#job_summary').html()
-                    object.description = object.description.replace(/<.*?>/g, ' ')
-
-                    const job = new jobs(object)
-
-                    jobs.findOneAndUpdate(object, object, { upsert: true })
-                      .catch(err => {
-                        if (err) {
-                          console.log(`error saving job "${jobtitle}", indeed, crawled`)
-                        }
-                      })
-                    done()
+                    const selection = res.$('#job_summary')
+                    if (selection.length) {
+                      object.description = selection.html()
+                      object.description = object.description.replace(/<.*?>/g, ' ')
+                      crawled = 'crawled'
+                    }
+                    else {
+                      console.log('#job_summary wasn\'t found')
+                      object.description = ''
+                      crawled = 'not crawled'
+                    }
                   }
+
+                  jobs.findOneAndUpdate({
+                    title: object.title,
+                    datepost: object.datepost,
+                    company: object.company
+                  }, object, { upsert: true })
+                    .catch(err => {
+                      if (err) {
+                        console.log(`error saving job "${title}", indeed, ${crawled}`)
+                      }
+                    })
+
+                  done()
                 }
               })
 
@@ -75,30 +80,33 @@ module.exports = {
           crawler.queue({
             url: url,
             callback: function (err, res, done) {
+              let crawled
               if (err) {
                 console.log(err)
                 object.description = ''
-
-                const job = new jobs(object)
-
-                job.save().then(() => console.log(`added indeed job "${jobtitle}", not crawled`)).catch(err => {
-                  if (err) {
-                    console.log(`error saving job "${jobtitle}", indeed`)
-                  }
-                })
+                crawled = 'not crawled'
               }
               else {
-                object.description = res.$('#job_summary').html()
-                object.description = object.description.replace(/<.*?>/g, ' ')
-                const job = new jobs(object)
-
-                job.save().then(() => console.log(`added indeed job "${jobtitle}", crawled`)).catch(err => {
-                  if (err) {
-                    console.log(`error saving job "${jobtitle}", indeed`)
-                  }
-                })
-                done()
+                const selection = res.$('#job_summary')
+                if (selection.length) {
+                  object.description = selection.html()
+                  object.description = object.description.replace(/<.*?>/g, ' ')
+                  crawled = 'crawled'
+                }
+                else {
+                  console.log('#job_summary wasn\'t found')
+                  object.description = ''
+                  crawled = 'not crawled'
+                }
               }
+
+              const job = new jobs(object)
+
+              job.save().then(() => console.log(`added indeed job "${jobtitle}", ${crawled}`)).catch(err => {
+                if (err) {
+                  console.log(`error saving job "${jobtitle}", indeed, ${crawled}`)
+                }
+              })
             }
           })
 
