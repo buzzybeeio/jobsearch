@@ -2,7 +2,7 @@ const router = require('express').Router()
 const stories = require('../database/mongoose').stories
 
 router.get('/stories', (req, res) => {
-  stories.find({}, null, { sort: '-date', limit: 8 })
+  stories.find({}, 'name', { sort: '-date', limit: 8, skip: 1 })
     .then(docs => res.json(docs))
     .catch(err => {
       console.log(err)
@@ -10,8 +10,8 @@ router.get('/stories', (req, res) => {
     })
 })
 
-router.get('/story/:storyID', (req, res) => {
-  stories.findById(req.params.storyID)
+router.get('/story/:name', (req, res) => {
+  stories.findOne({ name: req.params.name }, 'component')
     .then(doc => res.json(doc))
     .catch(err => {
       console.log(err)

@@ -9,13 +9,14 @@ router.get('/', (req, res) => {
     $or: keywords.map(word => ({ title: { $regex: word, $options: 'i' } })).concat(keywords.map(word => ({ description: { $regex: word, $options: 'i' } })))
   }
 
-  jobs.paginate(criteria, { select: 'title company location datepost URL', sort: '-datepost', limit: 50 })
-    .then(data => {
-      res.json({ jobs: data.docs, length: data.total })
+  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost' })
+    .then(docs => {
+      console.log(docs.length)
+      res.json({ jobs: docs.slice(0, 50), pages: Math.ceil(docs.length / 50) })
     })
     .catch(err => {
       console.log(err)
-      res.json({ jobs: [], length: 0 })
+      res.json({ jobs: [], pages: 0 })
     })
 })
 
@@ -27,20 +28,15 @@ router.post('/paginated', (req, res) => {
 
   const criteria = { $or, location: { $regex: new RegExp(`${req.body.place.city.replace(' ', '\\s?')}`, 'gi') } }
 
-  const options = {
-    select: 'title company location datepost URL',
-    sort: '-datepost',
-    page: req.body.page,
-    limit: 50
-  }
+  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost' })
+    .then(docs => {
+      const startPoint = Math.floor((req.body.page - 1) * 50)
 
-  jobs.paginate(criteria, options)
-    .then(data => {
-      res.json({ jobs: data.docs, length: data.total })
+      res.json({ jobs: docs.slice(startPoint, startPoint + 50), pages: Math.ceil(docs.length / 50) })
     })
     .catch(err => {
       console.log(err)
-      res.json({ jobs: [], length: 0 })
+      res.json({ jobs: [], pages: 0 })
     })
 })
 
@@ -52,15 +48,10 @@ router.post('/', (req, res) => {
 
   const criteria = { $or, location: { $regex: new RegExp(`${req.body.place.city.replace(' ', '\\s?')}`, 'gi') } }
 
-  const options = {
-    select: 'title company location datepost URL',
-    sort: '-datepost',
-    limit: 50
-  }
-
-  jobs.paginate(criteria, options)
-    .then(data => {
-      if (data.total < 25) {
+  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost' })
+    .then(docs => {
+      const length = docs.length
+      if (length < 25) {
 
         Promise.all([
           indeed(req.body.keywords, req.body.place),
@@ -70,21 +61,20 @@ router.post('/', (req, res) => {
             const found_jobs = [].concat(...newData)
             found_jobs.sort((a, b) => b.datepost - a.datepost)
 
-            const length = found_jobs.length
+            const newLength = found_jobs.length
             const sliced_jobs = found_jobs.slice(0, 50)
-            res.json({ jobs: sliced_jobs, length })
+            res.json({ jobs: sliced_jobs, pages: Math.ceil(newLength / 50) })
           })
-          .catch(() => res.json({ jobs: data.docs, length: data.total }))
+          .catch(() => res.json({ jobs: docs, pages: Math.ceil(length / 50) }))
 
       }
-
       else {
-        res.json({ jobs: data.docs, length: data.total })
+        res.json({ jobs: docs.slice(0, 50), pages: Math.ceil(length / 50) })
       }
     })
     .catch(err => {
       console.log(err)
-      res.json({ jobs: [], length: 0 })
+      res.json({ jobs: [], pages: 0 })
     })
 })
 
