@@ -2,7 +2,7 @@ const router = require('express').Router()
 const stories = require('../database/mongoose').stories
 
 router.get('/stories', (req, res) => {
-  stories.find({}, 'name', { sort: '-date', limit: 8, skip: 1 })
+  stories.find({}, null, { sort: '-date', limit: 8 })
     .then(docs => res.json(docs))
     .catch(err => {
       console.log(err)
