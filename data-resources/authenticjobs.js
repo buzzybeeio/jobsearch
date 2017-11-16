@@ -8,6 +8,38 @@ const location = 'sanfrancisco'
 const numberofjobs = '50'
 
 module.exports = {
+  customNoLoc: function (KEYWORDS) {
+    KEYWORDS = KEYWORDS.join(',')
+    return new Promise((resolve, reject) => {
+      axios.get(`${ROOT_URL}${KEY}&method=aj.jobs.search&keywords=${KEYWORDS}&perpage=100&format=json`)
+        .then(({ data }) => {
+          resolve(
+            data.listings.listing.map(({ title, company, post_date, url, description }) => {
+              const datepost = (new Date(post_date)).getTime()
+              const object = { title, company: company.name, location, datepost, URL: url, description }
+              object.description = object.description.replace(/<.*?>/g, ' ')
+
+              jobs.findOneAndUpdate({
+                title: object.title,
+                company: object.company,
+                description: object.description
+              }, object, { upsert: true })
+                .catch(err => {
+                  if (err) {
+                    console.log(`error saving job "${title}", authenticjobs`)
+                  }
+                })
+
+              return object
+            })
+          )
+        })
+        .catch(err => {
+          console.log(err)
+          reject('')
+        })
+    })
+  },
   custom: function (KEYWORDS, place) {
     KEYWORDS = KEYWORDS.join(',')
     place = place.city.replace('', ' ').toLowerCase()
