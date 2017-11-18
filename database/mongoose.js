@@ -20,4 +20,21 @@ const jobs = mongoose.model('jobs', Schema({
   description: String
 }))
 
-module.exports = { stories, jobs }
+const ourJobs = mongoose.model('ourjobs', Schema({
+  title: String,
+  company: String,
+  location: String,
+  datepost: Number,
+  URL: String,
+  description: String,
+  user: Object
+}))
+
+const users = mongoose.model('users', Schema({
+  name: String,
+  email: String,
+  password: String,
+  jobs: Array
+}))
+
+module.exports = { stories, jobs, ourJobs, users }
