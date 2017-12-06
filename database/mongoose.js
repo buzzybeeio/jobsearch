@@ -31,7 +31,9 @@ const ourJobs = mongoose.model('ourjobs', Schema({
 }))
 
 const users = mongoose.model('users', Schema({
-  name: String,
+  firstName: String,
+  lastName: String,
+  username: String,
   email: String,
   password: String,
   jobs: Array

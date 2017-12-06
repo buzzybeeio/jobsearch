@@ -3,52 +3,94 @@ const users = require('../database/mongoose').users
 const bcrypt = require('bcrypt')
 
 router.post('/register', (req, res) => {
-  bcrypt.hash(req.body.password, 15, (err, hash) => {
-    if (err) {
-      console.log(err)
-      res.json({ err: true })
-    } else {
-      const object = {
-        name: req.body.name,
-        password: hash,
-        email: req.body.email,
-        jobs: []
-      }
-      users.findOne({ email: object.email })
-        .then(result => {
-          if (result) {
-            res.json({ err: true, errMessage: 'Email Taken' })
+  req.checkBody('firstName', 'The first name field can\'t be empty').notEmpty()
+  req.checkBody('username', 'The Username field can\'t be empty').notEmpty()
+  req.checkBody('username', 'Username has to be alphanumerical').isAlphanumeric()
+  req.checkBody('email', 'Invalid email').isEmail()
+  req.checkBody('email2', 'Both emails have to be the same').equals(req.body.email)
+  req.checkBody('password', 'Password field can\'t be empty').notEmpty()
+  req.checkBody('password2', 'Both password fields have to have the same value').equals(req.body.password)
+
+  const errors = req.validationErrors()
+  if (errors) {
+    res.json(errors)
+  } else {
+    users.findOne({ $or: [{ email: req.body.email }, { username: req.body.username }] })
+      .then(data => {
+        //Checking if the Email or Username is taken
+        if (data) {
+          let error
+          if (data.email == req.body.email) {
+            error = 'Email is taken'
           } else {
-            users.save(object)
-              .then(() => res.json({ err: false }))
-              .catch(() => res.json({ err: true }))
+            error = 'Username is taken'
           }
-        })
-        .catch(() => res.json({ err: true }))
-    }
-  })
+          res.json({ error })
+        } else {
+          //If neither were taken proceeding to hash password
+          bcrypt.hash(req.body.password, 15, function (err, hash) {
+            if (err) {
+              console.log(err)
+              res.json({ error: 'There was an error, try again later!' })
+            } else {
+              //Saving user
+              const b = req.body
+              const newUser = new users({
+                firstName: b.firstName,
+                lastName: b.lastName,
+                username: b.username,
+                email: b.email,
+                password: hash,
+                jobs: []
+              });
+              newUser.save().then(() => {
+                res.json({ success: 'Success!, now try to login' })
+              }).catch(err => {
+                console.log(err)
+                res.json({ error: 'There was an error, try again later!' })
+              })
+            }
+          });
+        }
+      }).catch(err => {
+        console.log(err)
+        res.json({ error: 'There was an error, try again later!' })
+      })
+  }
 })
 
 router.post('/login', (req, res) => {
-  users.findOne({ email: req.body.email })
+  users.findOne({ $or: [{ email: req.body.string }, { username: req.body.string }] })
     .then(result => {
-      if (result) {
-        bcrypt.compare(req.body.password, result.password, (err, res) => {
+      if (!result) {
+        res.json({ error: 'Wrong email, username or password' })
+      } else {
+        const { password } = result
+        bcrypt.compare(req.body.password, password, (err, match) => {
           if (err) {
-            res.json({ err: true })
-          } else if (res) {
-            const response = {
-              name: result.name,
+            console.log(err)
+            res.json({ error: 'There was an error, try again later!' })
+          } else if (match) {
+            res.json({
+              username: result.username,
+              email: result.email,
+              firstName: result.firstName,
+              lastName: result.lastName,
               jobs: result.jobs
-            }
-            res.json(response)
+            })
           } else {
-            res.json({ err: true, errMessage: 'Wrong email or password' })
+            res.json({ error: 'Wrong email, username or password' })
           }
         })
-      } else {
-        res.json({ err: true, errMessage: 'Wrong email or password' })
       }
+    }).catch(err => {
+      console.log(err)
+      res.json({ error: 'There was an error, try again later!' })
     })
-    .catch(() => res.json({ err: true }))
 })
+
+router.post('/PasswordLost', (req, res) => {
+
+})
+
+module.exports = router

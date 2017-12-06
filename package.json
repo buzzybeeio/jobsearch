@@ -1,7 +1,7 @@
 {
   "name": "jobsearch",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,6 +15,7 @@
     "body-parser": "^1.18.2",
     "crawler": "^1.1.1",
     "express": "^4.16.2",
+    "express-validator": "^4.3.0",
     "mongoose": "^4.12.1",
     "restler": "^3.4.0"
   },
