@@ -17,6 +17,7 @@
     "express": "^4.16.2",
     "express-validator": "^4.3.0",
     "mongoose": "^4.12.1",
+    "nodemailer": "^4.4.1",
     "restler": "^3.4.0"
   },
   "devDependencies": {

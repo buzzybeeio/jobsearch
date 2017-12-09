@@ -51,7 +51,7 @@ module.exports = {
                     title: object.title,
                     datepost: object.datepost,
                     company: object.company
-                  }, object, { upsert: true })
+                  }, object, { upsert: true }).exec()
                     .catch(err => {
                       if (err) {
                         console.log(`error saving job "${title}", indeed, ${crawled}`)

@@ -24,7 +24,7 @@ module.exports = {
                 title: object.title,
                 company: object.company,
                 description: object.description
-              }, object, { upsert: true })
+              }, object, { upsert: true }).exec()
                 .catch(err => {
                   if (err) {
                     console.log(`error saving job "${title}", authenticjobs`)
