@@ -42,14 +42,12 @@ const users = mongoose.model('users', Schema({
 
 //collection for password recovery
 const prURL = mongoose.model('passwordrecovery', Schema({
-  URL: { type: String, unique: true },
   user: { type: Schema.Types.ObjectId, ref: 'users' },
-  creatingDate: { type: Number, default: Date.now }
+  creationDate: { type: Number, default: Date.now }
 }))
 
 //collection for email verification
 const vURL = mongoose.model('verify', Schema({
-  URL: { type: String, unique: true },
   user: { type: Schema.Types.ObjectId, ref: 'users' }
 }))
 

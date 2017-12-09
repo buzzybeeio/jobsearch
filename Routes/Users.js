@@ -5,13 +5,6 @@ const prURL = require('../database/mongoose').prURL
 const bcrypt = require('bcrypt')
 const nodemailer = require('nodemailer')
 
-const randomString = () => {
-  let result = '';
-  const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  for (let i = 0; i < 50; i++) result += chars[Math.floor(Math.random() * chars.length)];
-  return result;
-}
-
 const transporter = nodemailer.createTransport({
   service: 'Gmail',
   auth: {
@@ -65,11 +58,11 @@ router.post('/register', (req, res) => {
               });
               newUser.save().then(({ _id }) => {
                 //Verification proccess
-                const URL = `https://www.buzzybee.io/verifyAccount/${randomString()}`
-                const verifyDoc = new vURL({ URL, user: _id })
+                const verifyDoc = new vURL({ user: _id })
 
                 //saving the doc
-                verifyDoc.save().then(() => {
+                verifyDoc.save().then(doc => {
+                  const URL = `https://www.buzzybee.io/verifyAccount/${doc._id}`
                   const mailOptions = {
                     from: 'trialguest268@gmail.com', // sender address
                     to: b.email, // reciever
@@ -155,7 +148,7 @@ router.post('/verifyAccount', (req, res) => {
     res.json({ error: 'There was an error, try again later! \n error: V00' })
   } else {
     //Looking for the URL
-    vURL.findOne({ URL: req.body.string }).exec()
+    vURL.findById(req.body.string).exec()
       .then(doc => {
         if (doc) {
           //if the url exists look for the user
