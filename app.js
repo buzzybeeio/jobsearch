@@ -20,16 +20,14 @@ app.use(require('./Routes/Users'))
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`)
-  /*
-  jobs.remove({})
-  .then(() => {
-    console.log('adding Jobs')
-    require('./data-resources/authenticjobs').store()
-    require('./data-resources/indeed').store()
-  })
-  .catch(err => {
-    console.log('error removing')
-    console.log(err)
-  })
-  */
+  jobs.remove({}).exec()
+    .then(() => {
+      console.log('adding Jobs')
+      require('./data-resources/authenticjobs').store()
+      require('./data-resources/indeed').store()
+    })
+    .catch(err => {
+      console.log('error removing')
+      console.log(err)
+    })
 })
