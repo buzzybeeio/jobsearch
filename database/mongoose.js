@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const bcrypt = require('bcrypt')
 
 mongoose.connect(process.env.MONGODB_URI, {
   useMongoClient: true
@@ -29,7 +30,7 @@ const ourJobs = mongoose.model('ourjobs', Schema({
   description: String,
 }))
 
-const users = mongoose.model('users', Schema({
+const usersSchema = Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, default: '' },
   username: { type: String, unique: true, required: true },
@@ -38,7 +39,39 @@ const users = mongoose.model('users', Schema({
   verified: { type: Boolean, default: false },
   verificationDate: { type: Number, default: 0 },
   password: { type: String, required: true },
-}))
+})
+
+usersSchema.statics.findUserForRegister = function (user) {
+  return this.findOne({
+    $or: [{ email: user.email }, { username: user.username }]
+  }).select('email username')
+}
+
+usersSchema.pre('save', function (next) {
+  let user = this
+  bcrypt.hash(user.password, 15, function (err, hash) {
+    if (err) {
+      console.log(err.message)
+      next(new Error('h'))
+    } else {
+      user.password = hash
+      next()
+    }
+  })
+})
+
+usersSchema.statics.findUserForLogin = function (str) {
+  return this.findOne({
+    verified: true,
+    $or: [{ username: str }, { email: str }]
+  }).select('password username firstName lastName email')
+}
+
+usersSchema.statics.findByIdAndVerify = function (id) {
+  return this.findByIdAndUpdate(id, { verified: true, verificationDate: Date.now() })
+}
+
+const users = mongoose.model('users', usersSchema)
 
 //collection for password recovery
 const prURL = mongoose.model('passwordrecovery', Schema({

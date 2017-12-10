@@ -28,102 +28,94 @@ router.post('/register', (req, res) => {
   if (errors) {
     res.json(errors)
   } else {
-    users.findOne({ $or: [{ email: req.body.email }, { username: req.body.username }] }).exec()
-      .then(data => {
+    users.findUserForRegister(req.body).exec()
+      .then(existingUser => {
         //Checking if the Email or Username is taken
-        if (data) {
+        if (existingUser) {
           let error
-          if (data.email == req.body.email) {
+          if (existingUser.email == req.body.email) {
             error = 'Email is taken'
           } else {
             error = 'Username is taken'
           }
           res.json({ error })
         } else {
-          //If neither were taken proceeding to hash password
-          bcrypt.hash(req.body.password, 15, function (err, hash) {
-            if (err) {
-              console.log(err)
-              res.json({ error: 'There was an error, try again later! \n error: R00' })
-            } else {
-              //Saving user
-              const b = req.body
-              const newUser = new users({
-                firstName: b.firstName,
-                lastName: b.lastName,
-                username: b.username,
-                email: b.email,
-                password: hash,
-                SignupDate: Date.now()
-              });
-              newUser.save().then(({ _id }) => {
-                //Verification proccess
-                const verifyDoc = new vURL({ user: _id })
-
-                //saving the doc
-                verifyDoc.save().then(doc => {
-                  const URL = `https://www.buzzybee.io/verifyAccount/${doc._id}`
-                  const mailOptions = {
-                    from: 'trialguest268@gmail.com', // sender address
-                    to: b.email, // reciever
-                    subject: 'Confirm your buzzybee account',
-                    text: `Please go to this link ${URL} to confirm your account`, // plain text body
-                    html: `<b>Confirm your account!</b> <br/> Go <a href="${URL}">HERE</a> to confirm your account` // html body
-                  };
-
-                  //sending the email
-                  transporter.sendMail(mailOptions, (err, info) => {
-                    if (err) {
-                      console.log(err);
-                      res.json({ error: 'There was an error, try again later! \n error: R01' });
-                    } else {
-                      res.json({ success: 'Success!, now verify your email! \n Remember: Our email might be classified as "spam"' });
-                    }
-                  });
-
-                }).catch(err => {
-                  console.log(err)
-                  res.json({ error: 'There was an error, try again later! \n error: R02' })
-                })
-              }).catch(err => {
-                console.log(err)
-                res.json({ error: 'There was an error, try again later! \n error: R03' })
-              })
-            }
+          //Saving user
+          const b = req.body
+          const newUser = new users({
+            firstName: b.firstName,
+            lastName: b.lastName,
+            username: b.username,
+            email: b.email,
+            password: b.password,
+            SignupDate: Date.now()
           });
+          newUser.save().then(({ _id }) => {
+            //Verification proccess
+            const verifyDoc = new vURL({ user: _id })
+
+            //saving the doc
+            verifyDoc.save().then(doc => {
+              const URL = `https://www.buzzybee.io/verifyAccount/${doc._id}`
+              const mailOptions = {
+                from: 'trialguest268@gmail.com', // sender address
+                to: b.email, // reciever
+                subject: 'Confirm your buzzybee account',
+                text: `Please go to this link ${URL} to confirm your account`, // plain text body
+                html: `<b>Confirm your account!</b> <br/> Go <a href="${URL}">HERE</a> to confirm your account` // html body
+              };
+
+              //sending the email
+              transporter.sendMail(mailOptions, (err, info) => {
+                if (err) {
+                  console.log(err.message);
+                  res.error('R01')
+                } else {
+                  res.json({ success: 'Success!, now verify your email! \n Remember: Our email might be classified as "spam"' });
+                }
+              });
+
+            }).catch(err => {
+              console.log(err.message)
+              res.error('R02')
+            })
+          }).catch(err => {
+            console.log(err.message)
+            if (err.message == 'h') {
+              res.error('R00')
+            } else {
+              res.error('R03')
+            }
+          })
         }
       }).catch(err => {
-        console.log(err)
-        res.json({ error: 'There was an error, try again later! \n error: R04' })
+        console.log(err.message)
+        res.error('R04')
       })
   }
 })
 
 router.post('/login', (req, res) => {
   //Finding a verrified user
-  users.findOne({
-    verified: true,
-    $or: [{ email: req.body.string }, { username: req.body.string }]
-  }).select('password username firstName lastName email').exec()
-    .then(result => {
-      if (!result) {
+  users.findUserForLogin(req.body.string).exec()
+    .then(user => {
+      if (!user) {
         //If no user found
         res.json({ error: 'Wrong email, username or password' })
       } else {
-        const { password } = result
         //comparing hash and password
-        bcrypt.compare(req.body.password, password, (err, match) => {
+        bcrypt.compare(req.body.password, user.password, (err, match) => {
           if (err) {
-            //error while hashing
-            console.log(err)
-            res.json({ error: 'There was an error, try again later! \n err: L00' })
+            //error while comparing hash and password
+            console.log(err.message)
+            res.error('L00')
           } else if (match) {
             //If the password matches the hash send the data
             res.json({
-              username: result.username,
-              email: result.email,
-              firstName: result.firstName,
-              lastName: result.lastName
+              username: user.username,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName
             })
           } else {
             //If the password doesn't match the hash
@@ -132,66 +124,56 @@ router.post('/login', (req, res) => {
         })
       }
     }).catch(err => {
-      console.log(err)
+      console.log(err.message)
       //Error while trying to find the user
-      res.json({ error: 'There was an error, try again later! \n error: L01' })
+      res.error('L01')
     })
 })
 
 router.post('/verifyAccount', (req, res) => {
-  req.checkBody('string', 'There is no String').notEmpty()
-
-  const error = req.validationErrors()[0]
-
-  if (error) {
-    console.log(error)
-    res.json({ error: 'There was an error, try again later! \n error: V00' })
+  if (!req.body.string) {
+    res.error('V00')
   } else {
     //Looking for the URL
-    vURL.findById(req.body.string).exec()
+    vURL.findById(req.body.string).populate('user').exec()
       .then(doc => {
         if (doc) {
-          //if the url exists look for the user
-          users.findById(doc.user).exec()
-            .then(usr => {
-              if (usr) {
-                //if the user exists update it
-                users.findByIdAndUpdate(doc.user, { verified: true, verificationDate: Date.now() }).exec()
-                  .then(() => {
-                    //once the user has been verified, remove the url from the database
-                    vURL.findByIdAndRemove(doc._id).exec().then(() => {
-                      res.json({ success: 'Your account was verified, now try to login!' })
-                    }).catch(err => {
-                      console.log(err)
-                      res.json({ error: 'There was an error, try again later! \n error: V01' })
-                    })
-                  })
-                  .catch(err => {
-                    console.log(err)
-                    res.json('There was an error, try again later! \n error: V02')
-                  })
-              } else {
-                //if the user doesn't exist remove the URL from the database
+          if (doc.user) {
+            //if the user exists verify it
+            users.findByIdAndVerify(doc.user._id).exec()
+              .then(() => {
+                //once the user has been verified, remove the url from the database
                 vURL.findByIdAndRemove(doc._id).exec().then(() => {
-                  res.json({ error: 'There was an error, that user no longer exists' })
+                  res.json({ success: 'Your account was verified, now try to login!' })
                 }).catch(err => {
                   console.log(err)
-                  res.json({ error: 'There was an error, try again later! \n error: V03' })
+                  res.error('V01')
                 })
-              }
-            })
-            .catch(err => {
-              console.log(err)
-              res.json({ error: 'There was an error, try again later! \n error: V04' })
-            })
+              })
+              .catch(err => {
+                //catch for verify
+                console.log(err)
+                res.error('V02')
+              })
+          } else {
+            //if the user doesn't exist remove the URL from the database
+            vURL.findByIdAndRemove(doc._id).exec()
+              .then(() => {
+                res.json({ error: 'There was an error, that user no longer exists' })
+              }).catch(err => {
+                console.log(err)
+                res.error('V03')
+              })
+          }
         } else {
           //if the url isn't on the database
           res.json({ error: 'This URL isn\'t valid, please confirm if your account is already verified by logging in' })
         }
       })
       .catch(err => {
+        //catch for vURL.findById
         console.log(err)
-        res.json({ error: 'There was an error, try again later! \n error: V05' })
+        res.error('V04')
       })
   }
 })

@@ -5,9 +5,16 @@ const stories = require('./database/mongoose').stories;
 const jobs = require('./database/mongoose').jobs;
 const bodyParser = require('body-parser');
 const validator = require('express-validator')
+const errors = require('./Routes/errors')
 
 app.use(bodyParser.json())
 app.use(validator())
+app.use((req, res, next) => {
+  res.error = function(errCode){
+    res.json({ error: errors[errCode].user })
+  }
+  next()
+})
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*")
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
