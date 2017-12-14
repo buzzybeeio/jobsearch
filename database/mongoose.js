@@ -60,7 +60,14 @@ usersSchema.pre('save', function (next) {
   })
 })
 
-usersSchema.statics.findUserForLogin = function (str) {
+usersSchema.statics.findUnverifiedUser = function (str) {
+  return this.findOne({
+    verified: false,
+    $or: [{ username: str }, { email: str }]
+  }).select('password username firstName lastName email')
+}
+
+usersSchema.statics.findUser = function (str) {
   return this.findOne({
     verified: true,
     $or: [{ username: str }, { email: str }]
@@ -73,15 +80,9 @@ usersSchema.statics.findByIdAndVerify = function (id) {
 
 const users = mongoose.model('users', usersSchema)
 
-//collection for password recovery
-const prURL = mongoose.model('passwordrecovery', Schema({
-  user: { type: Schema.Types.ObjectId, ref: 'users' },
-  creationDate: { type: Number, default: Date.now }
-}))
-
 //collection for email verification
 const vURL = mongoose.model('verify', Schema({
   user: { type: Schema.Types.ObjectId, ref: 'users' }
 }))
 
-module.exports = { stories, jobs, ourJobs, users, prURL, vURL }
+module.exports = { stories, jobs, ourJobs, users, vURL }

@@ -10,8 +10,11 @@ const errors = require('./Routes/errors')
 app.use(bodyParser.json())
 app.use(validator())
 app.use((req, res, next) => {
-  res.error = function(errCode){
-    res.json({ error: errors[errCode].user })
+  res.error = function (errCode) {
+    res.json([errors[errCode].user])
+  }
+  res.success = function (message) {
+    res.json({ success: message })
   }
   next()
 })
