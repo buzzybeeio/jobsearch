@@ -13,9 +13,18 @@ app.use((req, res, next) => {
   res.error = function (errCode) {
     res.json([errors[errCode].user])
   }
+
+  res.fnError = function(errCode) {
+    return err => {
+      console.log(err.message)
+      res.error(errCode)
+    }
+  }
+
   res.success = function (message) {
     res.json({ success: message })
   }
+
   next()
 })
 app.use((req, res, next) => {

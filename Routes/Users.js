@@ -1,17 +1,9 @@
 const router = require('express').Router()
 const users = require('../database/mongoose').users
 const vURL = require('../database/mongoose').vURL
-const bcrypt = require('bcrypt')
+const { compare, hash, sendMail, randomString, genMail } = require('./functions')
 const nodemailer = require('nodemailer')
 const crypto = require('crypto')
-
-const transporter = nodemailer.createTransport({
-  service: 'Gmail',
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASS,
-  },
-});
 
 router.post('/register', (req, res) => {
   req.checkBody('firstName', 'The first name field can\'t be empty').notEmpty()
@@ -56,29 +48,13 @@ router.post('/register', (req, res) => {
 
             //saving the doc
             verifyDoc.save().then(doc => {
-              const URL = `https://www.buzzybee.io/verifyAccount/${doc._id}`
-              const mailOptions = {
-                from: process.env.EMAIL,
-                to: b.email, // reciever
-                subject: 'Confirm your buzzybee account',
-                text: `Please go to this link ${URL} to confirm your account`, // plain text body
-                html: `<b>Confirm your account!</b> <br/> Go <a href="${URL}">HERE</a> to confirm your account` // html body
-              };
-
               //sending the email
-              transporter.sendMail(mailOptions, (err, info) => {
-                if (err) {
-                  console.log(err.message);
-                  res.error('R01')
-                } else {
-                  res.success('Success!, now verify your email! \n Remember: Our email might be classified as "spam"');
-                }
-              });
+              const mailOptions = genMail(doc._id, 'confirm', b.email)
+              sendMail(mailOptions)
+                .then(() => res.success('Success!, now verify your email! \n Remember: Our email might be classified as "spam"'))
+                .catch(res.fnError('R01'))
 
-            }).catch(err => {
-              console.log(err.message)
-              res.error('R02')
-            })
+            }).catch(res.fnError('R02'))
           }).catch(err => {
             console.log(err.message)
             if (err.message == 'h') {
@@ -88,10 +64,7 @@ router.post('/register', (req, res) => {
             }
           })
         }
-      }).catch(err => {
-        console.log(err.message)
-        res.error('R04')
-      })
+      }).catch(res.fnError('R04'))
   }
 })
 
@@ -104,30 +77,23 @@ router.post('/login', (req, res) => {
         res.json(['Wrong email, username or password'])
       } else {
         //comparing hash and password
-        bcrypt.compare(req.body.password, user.password, (err, match) => {
-          if (err) {
-            //error while comparing hash and password
-            console.log(err.message)
-            res.error('L00')
-          } else if (match) {
-            //If the password matches the hash send the data
-            res.json({
-              username: user.username,
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName
-            })
-          } else {
-            //If the password doesn't match the hash
-            res.json(['Wrong email, username or password'])
-          }
-        })
+        compare(req.body.password, user.password)
+          .then(match => {
+            if (match) {
+              //If the password matches the hash send the data
+              res.json({
+                username: user.username,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName
+              })
+            } else {
+              //If the password doesn't match the hash
+              res.json(['Wrong email, username or password'])
+            }
+          }).catch(res.fnError('L00'))
       }
-    }).catch(err => {
-      console.log(err.message)
-      //Error while trying to find the user
-      res.error('L01')
-    })
+    }).catch(res.fnError('L01'))
 })
 
 router.post('/verifyAccount', (req, res) => {
@@ -145,45 +111,22 @@ router.post('/verifyAccount', (req, res) => {
                 //once the user has been verified, remove the url from the database
                 vURL.findByIdAndRemove(doc._id).exec().then(() => {
                   res.success('Your account was verified, now try to login!')
-                }).catch(err => {
-                  console.log(err)
-                  res.error('V01')
-                })
-              }).catch(err => {
-                //catch for verify
-                console.log(err)
-                res.error('V02')
-              })
+                }).catch(res.fnError('V01'))
+              }).catch(res.fnError('V02'))
           } else {
             //if the user doesn't exist remove the URL from the database
             vURL.findByIdAndRemove(doc._id).exec()
               .then(() => {
                 res.json(['There was an error, that user no longer exists'])
-              }).catch(err => {
-                console.log(err)
-                res.error('V03')
-              })
+              }).catch(res.fnError('V03'))
           }
         } else {
           //if the url isn't on the database
           res.json(['This URL isn\'t valid, please confirm if your account is already verified by logging in'])
         }
-      }).catch(err => {
-        //catch for vURL.findById
-        console.log(err)
-        res.error('V04')
-      })
+      }).catch(res.fnError('V04'))
   }
 })
-
-function randomString() {
-  return new Promise((resolve, reject) => {
-    crypto.randomBytes(35, (err, buffer) => {
-      if (err) reject(err)
-      else resolve(buffer.toString('base64').replace(/[=\/+]/g, ''))
-    })
-  })
-}
 
 router.post('/forgotPassword', (req, res) => {
   //Finding a verrified user
@@ -194,45 +137,21 @@ router.post('/forgotPassword', (req, res) => {
         res.json(['Wrong email or username'])
       } else {
         randomString().then(newPass => {
-          const mailOptions = {
-            from: process.env.EMAIL,
-            to: user.email, // reciever
-            subject: 'Your new password',
-            text: `This is your new password: ${newPass}`, // plain text body
-            html: `Your new password is: <br/> <b>${newPass}</b>` // html body
-          }
-
-          bcrypt.hash(newPass, 15, function (err, hash) {
-            if (err) {
-              console.log(err.message)
-              res.error('FP00')
-            } else {
+          hash(newPass)
+            .then(hash => {
               users.findByIdAndUpdate(user._id, { password: hash }).exec()
                 .then(() => {
-                  transporter.sendMail(mailOptions, (err, info) => {
-                    if (err) {
-                      console.log(err.message)
-                      res.error('FP01')
-                    } else {
+                  //sending email
+                  const mailOptions = genMail(newPass, 'newPassword', user.email)
+                  sendMail(mailOptions)
+                    .then(() => {
                       res.success('Success!, you password was modified, the new password was sent to your email')
-                    }
-                  })
-                }).catch(err => {
-                  console.log(err.message)
-                  res.error('FP02')
-                })
-            }
-          })
-        }).catch(err => {
-          console.log(err.message)
-          res.errror('FP03')
-        })
+                    }).catch(res.fnError('FP01'))
+                }).catch(res.fnError('FP02'))
+            }).catch(res.fnError('FP00'))
+        }).catch(res.fnError('FP03'))
       }
-    }).catch(err => {
-      console.log(err.message)
-      //Error while trying to find the user
-      res.error('FP04')
-    })
+    }).catch(res.fnError('FP04'))
 })
 
 router.post('/resendVerificationEmail', (req, res) => {
@@ -253,33 +172,15 @@ router.post('/resendVerificationEmail', (req, res) => {
             if (!doc) {
               res.json(['Hey!, looks like you may have gotten error R02 while registering, contact us please!, send us an email at info@buzzybee.io'])
             } else {
-              const URL = `https://www.buzzybee.io/verifyAccount/${doc._id}`
-              const mailOptions = {
-                from: process.env.EMAIL,
-                to: user.email, // reciever
-                subject: 'Confirm your buzzybee account',
-                text: `Please go to this link ${URL} to confirm your account`, // plain text body
-                html: `<b>Confirm your account!</b> <br/> Go <a href="${URL}">HERE</a> to confirm your account <br/> Sorry for the trouble!` // html body
-              };
-
-              transporter.sendMail(mailOptions, (err, info) => {
-                if (err) {
-                  console.log(err.message);
-                  res.error('RVE00')
-                } else {
-                  res.success('Success!, now verify your email! \n Remember: Our email might be classified as "spam"');
-                }
-              });
+              //sending email
+              const mailOptions = genMail(doc._id, 'confirm', user.email)
+              sendMail(mailOptions)
+                .then(() => res.success('Success!, now verify your email! \n Remember: Our email might be classified as "spam"'))
+                .catch(res.fnError('RVE00'))
             }
-          }).catch(err => {
-            console.log(err.message)
-            res.error('RVE01')
-          })
+          }).catch(res.fnError('RVE01'))
       }
-    }).catch(err => {
-      console.log(err.message)
-      res.error('RVE02')
-    })
+    }).catch(res.fnError('RVE02'))
 })
 
 router.post('/changePassword', (req, res) => {
@@ -299,34 +200,20 @@ router.post('/changePassword', (req, res) => {
         if (!user) {
           res.error('CP00')
         } else {
-          bcrypt.compare(req.body.currentPassword, user.password, function (err, match) {
-            if (err) {
-              console.log(err.message)
-              res.error('CP01')
-            } else if (!match) {
-              res.json(['Wrong password'])
-            } else {
-              bcrypt.hash(req.body.password, 15, function (err, hash) {
-                if (err) {
-                  console.log(err.message)
-                  res.error('CP02')
-                } else {
+          compare(req.body.currentPassword, user.password)
+            .then(match => {
+              if (!match) {
+                res.json(['Wrong password'])
+              } else {
+                hash(req.body.password).then(hash => {
                   users.findByIdAndUpdate(user._id, { password: hash }).exec()
-                    .then(() => {
-                      res.success('Success!, you changed your password!')
-                    }).catch(err => {
-                      console.log(err.message)
-                      res.error('CP03')
-                    })
-                }
-              })
-            }
-          })
+                    .then(() => res.success('Success!, you changed your password!'))
+                    .catch(res.fnError('CP03'))
+                }).catch(res.fnError('CP02'))
+              }
+            }).catch(res.fnError('CP01'))
         }
-      }).catch(err => {
-        console.log(err.message)
-        res.error('CP0')
-      })
+      }).catch(res.fnError('CP04'))
   }
 })
 
