@@ -19,7 +19,6 @@ router.post('/register', (req, res) => {
   req.checkBody('username', 'Username has to be alphanumerical').isAlphanumeric()
   req.checkBody('email', 'Invalid email').isEmail()
   req.checkBody('email2', 'Both emails have to be the same').equals(req.body.email)
-  req.checkBody('password', 'Password field can\'t be empty').notEmpty()
   req.checkBody('password2', 'Both password fields have to have the same value').equals(req.body.password)
   req.checkBody('password', 'Your password has to be at least 10 characters long').isLength({ min: 10 })
   req.checkBody('password', 'Your password has to have at least: 1 lower case english letter, 1 upper case english letter and 1 number').matches(/(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])/)
@@ -180,7 +179,7 @@ function randomString() {
   return new Promise((resolve, reject) => {
     crypto.randomBytes(35, (err, buffer) => {
       if (err) reject(err)
-      else resolve(buffer.toString('base64').replace(/[=\/+]/g, ''))
+      else resolve(buffer.toString('base64'))
     })
   })
 }
