@@ -64,7 +64,7 @@ usersSchema.statics.findUnverifiedUser = function (str) {
   return this.findOne({
     verified: false,
     $or: [{ username: str }, { email: str }]
-  }).select('password username firstName lastName email')
+  }).select('password username firstName email')
 }
 
 usersSchema.statics.findUser = function (str) {

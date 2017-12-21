@@ -46,18 +46,18 @@ module.exports = {
     })
   },
   
-  genMail: (data, type, reciever) => {
+  genMail: (data, type, recieverEmail, recieverName) => {
     const email = {
       from: process.env.EMAIL,
-      to: reciever
+      to: recieverEmail
     }
     if (type === 'confirm') {
-      email.subject = 'Confirm your buzzybee account'
+      email.subject = `Confirm your buzzybee account ${recieverName}!`
       let URL = `https://www.buzzybee.io/verifyAccount/${data}`
       email.text = `Please go to this link ${URL} to confirm your account`
       email.html = `<b>Confirm your account!</b> <br/> Go <a href="${URL}">HERE</a> to confirm your account`
     } else if (type === 'resend confirm') {
-      email.subject = 'Confirm your buzzybee account'
+      email.subject = `Confirm your buzzybee account ${recieverName}!`
       let URL = `https://www.buzzybee.io/verifyAccount/${data}`
       email.text = `Please go to this link ${URL} to confirm your account`
       email.html = `<b>Confirm your account!</b> <br/> Go <a href="${URL}">HERE</a> to confirm your account <br/> Sorry for the trouble!`

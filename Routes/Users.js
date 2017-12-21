@@ -42,28 +42,27 @@ router.post('/register', (req, res) => {
             SignupDate: Date.now()
           });
           newUser.save().then(({ _id }) => {
-            //Verification proccess
             const verifyDoc = new vURL({ user: _id })
 
             //saving the doc
             verifyDoc.save().then(doc => {
-              //sending the email
-              const mailOptions = genMail(doc._id, 'confirm', b.email)
+              //sending the verification email
+              const mailOptions = genMail(doc._id, 'confirm', b.email, b.firstName)
               sendMail(mailOptions)
                 .then(() => res.success('Success!, now verify your email! \n Remember: Our email might be classified as "spam"'))
-                .catch(res.fnError('R01'))
-
-            }).catch(res.fnError('R02'))
+                .catch(res.fnError('R01')) // sendMail catch
+            }).catch(res.fnError('R02')) // verifyDoc.save catch
+            // newUser.save catch
           }).catch(err => {
             console.log(err.message)
             if (err.message == 'h') {
-              res.error('R00')
+              res.error('R00') // error while hashing
             } else {
-              res.error('R03')
+              res.error('R03') // error while saving user
             }
           })
         }
-      }).catch(res.fnError('R04'))
+      }).catch(res.fnError('R04')) // findUserForRegister catch
   }
 })
 
@@ -90,9 +89,9 @@ router.post('/login', (req, res) => {
               //If the password doesn't match the hash
               res.json(['Wrong email, username or password'])
             }
-          }).catch(res.fnError('L00'))
+          }).catch(res.fnError('L00')) // compare catch
       }
-    }).catch(res.fnError('L01'))
+    }).catch(res.fnError('L01')) // findUser catch
 })
 
 router.post('/verifyAccount', (req, res) => {
@@ -110,8 +109,9 @@ router.post('/verifyAccount', (req, res) => {
                 //once the user has been verified, remove the url from the database
                 vURL.findByIdAndRemove(doc._id).exec().then(() => {
                   res.success('Your account was verified, now try to login!')
-                }).catch(res.fnError('V01'))
-              }).catch(res.fnError('V02'))
+                }).catch(res.fnError('V01')) // vURL.findByIdAndRemove catch
+              }).catch(res.fnError('V02')) // users.findByIdAndVerify catch
+
           } else {
             //if the user doesn't exist remove the URL from the database
             vURL.findByIdAndRemove(doc._id).exec()
@@ -119,11 +119,12 @@ router.post('/verifyAccount', (req, res) => {
                 res.json(['There was an error, that user no longer exists'])
               }).catch(res.fnError('V03'))
           }
+
         } else {
           //if the url isn't on the database
           res.json(['This URL isn\'t valid, please confirm if your account is already verified by logging in'])
         }
-      }).catch(res.fnError('V04'))
+      }).catch(res.fnError('V04')) // vURL.findById catch
   }
 })
 
@@ -145,12 +146,12 @@ router.post('/forgotPassword', (req, res) => {
                   sendMail(mailOptions)
                     .then(() => {
                       res.success('Success!, you password was modified, the new password was sent to your email')
-                    }).catch(res.fnError('FP01'))
-                }).catch(res.fnError('FP02'))
-            }).catch(res.fnError('FP00'))
-        }).catch(res.fnError('FP03'))
+                    }).catch(res.fnError('FP01')) // sendMail catch
+                }).catch(res.fnError('FP02')) // findByIdAndUpdate catch
+            }).catch(res.fnError('FP00')) // hash catch
+        }).catch(res.fnError('FP03')) // randomString catch
       }
-    }).catch(res.fnError('FP04'))
+    }).catch(res.fnError('FP04')) // findUser catch
 })
 
 router.post('/resendVerificationEmail', (req, res) => {
@@ -172,14 +173,14 @@ router.post('/resendVerificationEmail', (req, res) => {
               res.json(['Hey!, looks like you may have gotten error R02 while registering, contact us please!, send us an email at info@buzzybee.io'])
             } else {
               //sending email
-              const mailOptions = genMail(doc._id, 'confirm', user.email)
+              const mailOptions = genMail(doc._id, 'confirm', user.email, user.firstName)
               sendMail(mailOptions)
                 .then(() => res.success('Success!, now verify your email! \n Remember: Our email might be classified as "spam"'))
-                .catch(res.fnError('RVE00'))
+                .catch(res.fnError('RVE00')) // sendMail catch
             }
-          }).catch(res.fnError('RVE01'))
+          }).catch(res.fnError('RVE01')) // vURL.findOne catch
       }
-    }).catch(res.fnError('RVE02'))
+    }).catch(res.fnError('RVE02')) // findUnverifiedUser catch
 })
 
 router.post('/changePassword', (req, res) => {
@@ -197,7 +198,7 @@ router.post('/changePassword', (req, res) => {
     users.findOne({ username: req.body.username }).exec()
       .then(user => {
         if (!user) {
-          res.error('CP00')
+          res.error('CP00') // If the user is not found
         } else {
           compare(req.body.currentPassword, user.password)
             .then(match => {
@@ -207,12 +208,12 @@ router.post('/changePassword', (req, res) => {
                 hash(req.body.password).then(hash => {
                   users.findByIdAndUpdate(user._id, { password: hash }).exec()
                     .then(() => res.success('Success!, you changed your password!'))
-                    .catch(res.fnError('CP03'))
-                }).catch(res.fnError('CP02'))
+                    .catch(res.fnError('CP03')) // findByIdAndUpdate catch
+                }).catch(res.fnError('CP02')) // hash catch
               }
-            }).catch(res.fnError('CP01'))
+            }).catch(res.fnError('CP01')) // compare catch
         }
-      }).catch(res.fnError('CP04'))
+      }).catch(res.fnError('CP04')) // findOne catch
   }
 })
 
