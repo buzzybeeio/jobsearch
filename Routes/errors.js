@@ -22,6 +22,7 @@ module.exports = {
   CP01: { user: 'There was an error, try again later! \n Error: CP01', us: 'Error: comparing the current password and the hash' },
   CP02: { user: 'There was an error, try again later! \n Error: CP02', us: 'Error: creating new hash' },
   CP03: { user: 'There was an error, try again later! \n Error: CP03', us: 'Error: changing password' },
+  CP04: { user: 'There was an error, try again later! \n Error: CP04', us: 'Error: finding user' },
 
   V00: { user: 'There was an error, try again later! \n Error: V00', us: 'Error: no string' },
   V01: { user: 'There was an error, try again later! \n Error: V01', us: 'Error: User verified but URL wasn\'t removed' },
