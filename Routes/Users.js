@@ -1,7 +1,7 @@
 const router = require('express').Router()
 const users = require('../database/mongoose').users
 const vURL = require('../database/mongoose').vURL
-const { compare, hash, sendMail, randomString, genMail } = require('./functions')
+const { compare, hash, sendMail, randomString, genMail } = require('../functions')
 const nodemailer = require('nodemailer')
 const crypto = require('crypto')
 
