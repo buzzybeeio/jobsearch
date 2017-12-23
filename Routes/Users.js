@@ -3,7 +3,6 @@ const users = require('../database/mongoose').users
 const vURL = require('../database/mongoose').vURL
 const { compare, hash, sendMail, randomString, genMail } = require('../functions')
 const nodemailer = require('nodemailer')
-const crypto = require('crypto')
 
 router.post('/register', (req, res) => {
   req.checkBody('firstName', 'The first name field can\'t be empty').notEmpty()
@@ -159,11 +158,11 @@ router.post('/resendVerificationEmail', (req, res) => {
     .then(user => {
       if (!user) {
         res.json([
-          `User not found
-            If you didn't get error R01 from the registration phase try following this next steps: 
-            1) try to login to see if your user is already verified
-            2) If you can\'t login try using the "I Forgot my password" button
-            3) If you get "Wrong email or username", ask for a resend of the verification again (remember to verify if you used the right username / email)
+          `User not found\n
+            If you didn't get error R01 from the registration phase try following this next steps:\n
+            1) try to login to see if your user is already verified\n
+            2) If you can\'t login try using the "I Forgot my password" button\n
+            3) If you get "Wrong email or username", ask for a resend of the verification again (remember to verify if you used the right username / email)\n
             If you keep getting an error, try to contact us`
         ])
       } else {
