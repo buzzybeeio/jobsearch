@@ -1,6 +1,6 @@
 const jobs = require('./database/mongoose').jobs
 
-jobs.remove({})
+jobs.remove({}).exec()
   .then(() => {
     require('./data-resources/authenticjobs').store()
     require('./data-resources/indeed').store()

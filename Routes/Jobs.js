@@ -9,7 +9,9 @@ router.get('/', (req, res) => {
     $or: keywords.map(word => ({ title: { $regex: word, $options: 'i' } })).concat(keywords.map(word => ({ description: { $regex: word, $options: 'i' } })))
   }
 
-  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost' })
+  jobs.find(criteria)
+    .select('title company location datepost URL')
+    .sort('-datepost').exec()
     .then(docs => {
       console.log(docs.length)
       res.json({ jobs: docs.slice(0, 50), pages: Math.ceil(docs.length / 50) })
@@ -28,7 +30,9 @@ router.post('/paginated', (req, res) => {
 
   const criteria = { $or, location: { $regex: new RegExp(`${req.body.place.city.replace(' ', '\\s?')}`, 'gi') } }
 
-  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost' })
+  jobs.find(criteria)
+    .select('title company location datepost URL')
+    .sort('-datepost').exec()
     .then(docs => {
       const startPoint = Math.floor((req.body.page - 1) * 50)
 
@@ -48,7 +52,9 @@ router.post('/', (req, res) => {
 
   const criteria = { $or, location: { $regex: new RegExp(`${req.body.place.city.replace(' ', '\\s?')}`, 'gi') } }
 
-  jobs.find(criteria, 'title company location datepost URL', { sort: '-datepost' })
+  jobs.find(criteria)
+    .select('title company location datepost URL')
+    .sort('-datepost').exec()
     .then(docs => {
       const length = docs.length
       if (length < 25) {
