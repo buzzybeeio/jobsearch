@@ -1,12 +1,13 @@
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const nodemailer = require('nodemailer')
 const crypto = require('crypto')
+const { EMAIL, PASS, MAILSERVICE } = require('./config/env')
 
 const transporter = nodemailer.createTransport({
-  service: 'Gmail',
+  service: MAILSERVICE,
   auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASS,
+    user: EMAIL,
+    pass: PASS,
   },
 })
 
@@ -42,14 +43,14 @@ module.exports = {
     return new Promise((resolve, reject) => {
       crypto.randomBytes(35, (err, buffer) => {
         if (err) reject(err)
-        else resolve(buffer.toString('base64').replace(/[=\/+]/g, ''))
+        else resolve(buffer.toString('base64'))
       })
     })
   },
   
   genMail: (data, type, recieverEmail, recieverName) => {
     const email = {
-      from: process.env.EMAIL,
+      from: EMAIL,
       to: recieverEmail
     }
     if (type === 'confirm') {

@@ -1,30 +1,32 @@
 const express = require('express');
 const app = express();
-const port = process.env.PORT || 3000;
 const stories = require('./database/mongoose').stories;
 const jobs = require('./database/mongoose').jobs;
-const bodyParser = require('body-parser');
-const validator = require('express-validator')
-const errors = require('./Routes/errors')
+const errors = require('./Routes/errors');
+const enviroment = require('./config/env');
 
-app.use(bodyParser.json())
-app.use(validator())
+//initializing passport
+require('./config/passport')
+
+// Middleware
+const { json: JSONparser, urlencoded: URLparser } = require('body-parser')
+app.use(URLparser({ extended: false }))
+app.use(JSONparser())
+app.use(require('express-validator')())
+app.use(require('passport').initialize())
 app.use((req, res, next) => {
   res.error = function (errCode) {
     res.json([errors[errCode].user])
   }
-
-  res.fnError = function(errCode) {
+  res.fnError = function (errCode) {
     return err => {
       console.log(err.message)
       res.error(errCode)
     }
   }
-
   res.success = function (message) {
     res.json({ success: message })
   }
-
   next()
 })
 app.use((req, res, next) => {
@@ -35,18 +37,20 @@ app.use((req, res, next) => {
 
 app.use(require('./Routes/Jobs'))
 app.use(require('./Routes/Stories'))
-app.use(require('./Routes/Users'))
+app.use(require('./Routes/Auth'))
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
-  jobs.remove({}).exec()
-    .then(() => {
-      console.log('adding Jobs')
-      require('./data-resources/authenticjobs').store()
-      require('./data-resources/indeed').store()
-    })
-    .catch(err => {
-      console.log('error removing')
-      console.log(err)
-    })
+app.listen(enviroment.PORT, () => {
+  console.log(`Listening on port ${enviroment.PORT}`)
+  if (!enviroment.OFFLINE) {
+    jobs.remove({}).exec()
+      .then(() => {
+        console.log('adding Jobs')
+        require('./data-resources/authenticjobs').store()
+        require('./data-resources/indeed').store()
+      })
+      .catch(err => {
+        console.log('error removing')
+        console.log(err)
+      })
+  }
 })

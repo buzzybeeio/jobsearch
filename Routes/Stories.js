@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const stories = require('../database/mongoose').stories
+const { stories } = require('../database/mongoose')
 
 router.get('/stories', (req, res) => {
   stories.find({}).sort('-date').limit(8).exec()
