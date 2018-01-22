@@ -1,6 +1,5 @@
 const router = require('express').Router()
-const users = require('../database/mongoose').users
-const vURL = require('../database/mongoose').vURL
+const { users, vURL } = require('../database/mongoose')
 const { compare, hash, sendMail, randomString, genMail } = require('../functions')
 const nodemailer = require('nodemailer')
 const passport = require('passport')
@@ -70,8 +69,8 @@ router.post('/register', (req, res) => {
 
 router.post('/login', (req, res, next) => {
   passport.authenticate('local', (error, user, other) => {
-    if(error) res.fnError(other)(error)
-    else if(user) res.json(user)
+    if (error) res.fnError(other)(error)
+    else if (user) res.json(user)
     else res.json(other)
   })(req, res, next)
 })

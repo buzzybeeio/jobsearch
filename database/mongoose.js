@@ -9,7 +9,8 @@ mongoose.connect(Mongo_url, {
 
 const stories = mongoose.model('stories', Schema({
   name: String,
-  component: String,
+  introducction: String,
+  interview: String,
   date: Number
 }))
 
