@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const stories = require('../database/mongoose').stories
+const { stories } = require('../database/mongoose')
 
 router.get('/stories', (req, res) => {
   stories.find({}).sort('-date').limit(8).exec()
@@ -11,7 +11,7 @@ router.get('/stories', (req, res) => {
 })
 
 router.get('/story/:name', (req, res) => {
-  stories.findOne({ name: req.params.name }).select('component').exec()
+  stories.findOne({ name: req.params.name }).select('introducction interview').exec()
     .then(doc => res.json(doc))
     .catch(err => {
       console.log(err)

@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const jobs = require('../database/mongoose').jobs
+const { jobs } = require('../database/mongoose')
 const indeed = require('../data-resources/indeed').custom
 const authenticJobs = require('../data-resources/authenticjobs').custom
 
