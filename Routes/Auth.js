@@ -70,8 +70,17 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res, next) => {
   passport.authenticate('local', (error, user, other) => {
     if (error) res.fnError(other)(error)
-    else if (user) res.json(user)
-    else res.json(other)
+    else if (user) { 
+      const tokenize = { password: req.body.password, _id: user._id }
+      res.json({user, token: 'JWT ' + sign(tokenize, secret)})
+    } else res.json(other)
+  })(req, res, next)
+})
+
+router.get('/loginWToken', (req, res, next) => {
+  passport.authenticate('jwt', (error, user, other) => {
+    if (!user) res.status(500).send(other)
+    else res.json(user)
   })(req, res, next)
 })
 

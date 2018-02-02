@@ -1,10 +1,12 @@
 const bcrypt = require('bcryptjs')
 const nodemailer = require('nodemailer')
 const crypto = require('crypto')
-const { EMAIL, PASS, MAILSERVICE } = require('./config/env')
+const { EMAIL, PASS } = require('./config/env')
 
 const transporter = nodemailer.createTransport({
-  service: MAILSERVICE,
+  host: 'smtp.zoho.com',
+  port: 465,
+  secure: true,
   auth: {
     user: EMAIL,
     pass: PASS,

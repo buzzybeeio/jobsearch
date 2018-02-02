@@ -3,6 +3,7 @@ const Schema = mongoose.Schema
 const bcrypt = require('bcryptjs')
 const { Mongo_url } = require('../config/env');
 
+mongoose.Promise = global.Promise
 mongoose.connect(Mongo_url, {
   useMongoClient: true
 })
