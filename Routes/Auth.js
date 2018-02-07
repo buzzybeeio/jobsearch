@@ -135,7 +135,7 @@ router.post('/forgotPassword', (req, res) => {
                   const mailOptions = genMail(newPass, 'newPassword', user.email)
                   sendMail(mailOptions)
                     .then(() => {
-                      res.success('Success!, you password was modified, the new password was sent to your email')
+                      res.success(`Success!, you password was modified, the new password was sent to ${user.email}`)
                     }).catch(res.fnError('FP01')) // sendMail catch
                 }).catch(res.fnError('FP02')) // findByIdAndUpdate catch
             }).catch(res.fnError('FP00')) // hash catch
@@ -165,7 +165,7 @@ router.post('/resendVerificationEmail', (req, res) => {
               //sending email
               const mailOptions = genMail(doc._id, 'confirm', user.email, user.firstName)
               sendMail(mailOptions)
-                .then(() => res.success('Success!, now verify your email! \n Remember: Our email might be classified as "spam"'))
+                .then(() => res.success(`Success!, now verify your email! \n Remember: Our email might be classified as "spam" \n The email was sent to ${user.email}`))
                 .catch(res.fnError('RVE00')) // sendMail catch
             }
           }).catch(res.fnError('RVE01')) // vURL.findOne catch
